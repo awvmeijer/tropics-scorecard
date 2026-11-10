@@ -1,0 +1,12 @@
+"""Merge intervals into episodes."""
+
+
+def merge_intervals(intervals, max_gap=0):
+    """Merge intervals that overlap or lie within max_gap of each other.
+
+    intervals: iterable of (start, end) with start <= end, in any order.
+    Two intervals merge when next.start <= current.end + max_gap.
+    Returns a list of (start, end) tuples sorted by start. The input is not
+    modified. ValueError when an interval has start > end.
+    """
+    raise NotImplementedError("write me by hand: metrics.episodes.merge_intervals")

@@ -1,0 +1,69 @@
+# Everything the scorer reads. The verification protocol explains each choice in words.
+# Values marked TODO are fixed at the stop points in CLAUDE.md, not before.
+
+region:
+  name: Singapore and surroundings
+  bounding_box: {south: 0.5, north: 2.5, west: 102.5, east: 105.0}
+  local_timezone: Asia/Singapore
+
+period:
+  # Valid times, UTC. Fixed 2026-11-10 (option A in docs/source_check.md).
+  day_level_lead_times: {start: 2024-02-11, end: 2026-10-31}   # Previous Runs: GFS and IFS 0.25 complete from here at lead day 7
+  hour_level_lead_times: {start: 2026-04-02, end: 2026-10-31}  # Single Runs: first run for GFS and IFS 0.25
+  climatology_years: {start: 2017-01-01, end: 2023-12-31}      # station data before the test period, no overlap
+
+variables:
+  - rain_hourly
+  - temperature_2m
+  - wind_speed_10m
+
+rain_thresholds_mm_per_hour: TODO
+
+lead_times:
+  days: [1, 2, 3, 5, 7]
+  hours: TODO
+
+forecast_sources:
+  - persistence
+  - climatology
+  - gfs_global       # identifiers confirmed against the API, 2026-11-10
+  - ecmwf_ifs025
+
+# Scored separately on the part of the period they cover, never pooled with the main table.
+secondary_forecast_sources:
+  - {id: ecmwf_aifs025_single, from: 2025-02-24}
+  - {id: ecmwf_ifs, from: 2025-10-07}
+
+bootstrap:
+  block_length_hours: TODO
+  resamples: 2000
+  alpha: 0.05
+  seed: 0
+
+quality_control:
+  max_missing_fraction_per_hour: TODO
+  score_with_and_without_flags: true
+  # Starting values for the checks, to be reviewed in the observation notes. Units as stored.
+  range:
+    rainfall_mm_per_5min: {min: 0, max: 30}
+    air_temperature_c: {min: 18, max: 40}
+    relative_humidity_pct: {min: 20, max: 100}
+    wind_speed_knots: {min: 0, max: 60}
+    isd_temperature_c: {min: 15, max: 40}
+    isd_wind_speed_ms: {min: 0, max: 40}
+  spike:                       # jump from both neighbours, same sign, within max_gap_minutes
+    air_temperature_c: {jump: 3.0, max_gap_minutes: 5}
+    relative_humidity_pct: {jump: 15.0, max_gap_minutes: 5}
+    isd_temperature_c: {jump: 4.0, max_gap_minutes: 90}
+  flatline:                    # identical value for at least this long
+    air_temperature_c: {minutes: 120}
+    relative_humidity_pct: {minutes: 240}
+    wind_speed_knots: {minutes: 360, ignore_value: 0}
+    rainfall_mm_per_5min: {minutes: 60, ignore_value: 0}
+  stuck_dry:                   # gauge reads zero for an hour while nearby gauges read a lot
+    radius_km: 10
+    min_neighbours: 3
+    neighbour_median_mm: 5.0
+  timezone:                    # local hour of the mean daily temperature maximum
+    expected_local_hour_of_max: {min: 11, max: 17}
+  isd_bad_quality_codes: ["2", "3", "6", "7"]
