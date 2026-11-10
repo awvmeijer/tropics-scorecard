@@ -14,6 +14,8 @@ Status: first draft, 10 November 2026. Rain facts below come from 7 days (4 to 1
 
 Timestamps carry +08:00 (Singapore time). Stored as UTC and local time.
 
+Temperature and wind speed are taken as one snapshot per hour, the 1-minute reading stamped on the hour (decided 10 November 2026, to stay inside the keyless rate limit). A snapshot request returns the reading for that exact minute for all stations. Forecast temperature and wind are also instantaneous values on the hour, so the two describe the same moment. The cost: a snapshot carries all the minute-to-minute noise of a gust or a passing shower, which an hourly mean would smooth out.
+
 Rain stamps in 2024 fall on minutes 0, 5, ..., 55 with zero seconds. In the source check, days in January to April 2017 were stamped HH:M4:59 or HH:M9:59 instead (for example 23:59:59), and June 2017 onward used HH:M5:00. So the stamping convention changed in 2017. The provider does not say whether a stamp marks the start or the end of its 5 minutes. **Not yet confirmed.** For now the hourly sum treats a stamp as the end of its interval, which the 2017 convention (one second before the next 5-minute mark) suggests. Comparing hourly sums both ways against the Changi airport record is the planned test.
 
 ## Coverage
