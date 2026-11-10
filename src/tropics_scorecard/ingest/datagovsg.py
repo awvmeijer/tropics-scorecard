@@ -8,7 +8,11 @@ Without a key the API allows roughly one request every 7 to 10 seconds.
 
 Usage:
     python -m tropics_scorecard.ingest.datagovsg rainfall 2024-02-04 2026-10-31
-    python -m tropics_scorecard.ingest.datagovsg air-temperature 2024-02-04 2026-10-31 --snapshots
+    python -m tropics_scorecard.ingest.datagovsg air-temperature,wind-speed 2024-02-04 2026-10-31 --snapshots
+
+A snapshot request for HH:MM:SS returns the reading stamped HH:MM:00 for every station
+in one call (checked 2026-11-10). Snapshots are taken on the hour, Singapore time, which
+is also on the hour in UTC.
 """
 from __future__ import annotations
 
@@ -88,19 +92,24 @@ def days(start: dt.date, end: dt.date):
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("variable", choices=VARIABLES)
+    ap.add_argument("variable", help="one variable, or several separated by commas: " + ", ".join(VARIABLES))
     ap.add_argument("start", type=dt.date.fromisoformat)
     ap.add_argument("end", type=dt.date.fromisoformat)
     ap.add_argument("--snapshots", action="store_true", help="hourly snapshots instead of every reading")
     ap.add_argument("--newest-first", action="store_true")
     args = ap.parse_args(argv)
+    variables = args.variable.split(",")
+    for v in variables:
+        if v not in VARIABLES:
+            ap.error(f"unknown variable {v}")
     throttle = Throttle(INTERVAL_SECONDS)
     seq = list(days(args.start, args.end))
     if args.newest_first:
         seq.reverse()
     for i, day in enumerate(seq, 1):
-        n = fetch_snapshots(args.variable, day, throttle) if args.snapshots else fetch_day(args.variable, day, throttle)
-        print(f"{args.variable} {day} pages={len(n)} ({i}/{len(seq)})", flush=True)
+        for v in variables:
+            n = fetch_snapshots(v, day, throttle) if args.snapshots else fetch_day(v, day, throttle)
+            print(f"{v} {day} {'snapshots' if args.snapshots else 'pages'}={len(n)} ({i}/{len(seq)})", flush=True)
     return 0
 
 
