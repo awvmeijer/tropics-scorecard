@@ -180,7 +180,8 @@ export function lineChart(host, { series, xs, xFormat = String, yFormat = (v) =>
     sv("text", { x: m.l - 8, y: Y(t) + 4, "text-anchor": "end", class: "tick" }, svg).textContent = yFormat(t);
   }
   if (zero && lo < 0 && hi > 0) sv("line", { class: "axis-line", x1: m.l, x2: W - m.r, y1: Y(0), y2: Y(0) }, svg);
-  const every = Math.ceil(xs.length / Math.max(2, Math.floor((W - m.l - m.r) / 60)));
+  const longest = Math.max(...xs.map((x) => String(xFormat(x)).length));
+  const every = Math.ceil(xs.length / Math.max(2, Math.floor((W - m.l - m.r) / (7.5 * longest + 16))));
   xs.forEach((x, i) => {
     if (i % every) return;
     sv("text", { x: X(x), y: H - m.b + 18, "text-anchor": "middle", class: "tick" }, svg).textContent = xFormat(x);
@@ -339,8 +340,10 @@ export function stationMap(host, { basemap, stations, cells, cellSize, model, ru
   for (const s of stations) {
     const g = sv("g", { tabindex: 0 }, body);
     const fillC = colourBy ? colourBy(s) : "var(--ink)";
-    if (s.network === "isd") sv("rect", { x: X(s.lon) - 5, y: Y(s.lat) - 5, width: 10, height: 10, fill: fillC, stroke: "#fff", "stroke-width": 1.5 }, g);
-    else sv("circle", { cx: X(s.lon), cy: Y(s.lat), r: 4, fill: fillC, stroke: "#fff", "stroke-width": 1.5 }, g);
+    // Coloured markers get a thin charcoal ring so the lightest steps stay visible on land.
+    const ring = colourBy ? { stroke: "var(--ink-2)", "stroke-width": 0.8 } : { stroke: "#fff", "stroke-width": 1.5 };
+    if (s.network === "isd") sv("rect", { x: X(s.lon) - 5, y: Y(s.lat) - 5, width: 10, height: 10, fill: fillC, ...ring }, g);
+    else sv("circle", { cx: X(s.lon), cy: Y(s.lat), r: colourBy ? 5 : 4, fill: fillC, ...ring }, g);
     sv("circle", { cx: X(s.lon), cy: Y(s.lat), r: 12, fill: "transparent" }, g);
     const showTip = () => {
       const bb = svg.getBoundingClientRect(), hb = host.getBoundingClientRect();

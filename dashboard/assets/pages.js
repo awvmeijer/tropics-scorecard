@@ -1,7 +1,7 @@
 import {
   MAIN, METRICS, REGIMES, REGIME_SHORT, SOURCES, VARIABLES, VIEWS, el, fmt, fmtInt, heatmap, legend, limitsPanel, lineChart, load,
   pick, rowsOf, stationMap, statusPanel, table,
-} from "./app.js?v=7";
+} from "./app.js?v=10";
 
 const page = document.body.dataset.page;
 const $ = (id) => document.getElementById(id);
@@ -228,9 +228,108 @@ async function observationsPage() {
   }
 }
 
+
+// ------------------------------------------------------------------ case studies
+
+function profile(host, snd) {
+  // Temperature and dew point against pressure, log scale, 1000 to 100 hPa.
+  host.replaceChildren();
+  host.classList.add("chart");
+  const W = Math.max(280, Math.round(host.clientWidth || 360)), H = 340, m = { t: 10, r: 12, b: 30, l: 46 };
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", "Sounding profile");
+  host.append(svg);
+  const lv = snd.levels.filter((l) => l.p && l.p <= 1015);
+  const ts = lv.flatMap((l) => [l.t, l.td]).filter((v) => v !== null);
+  if (!ts.length) { host.replaceChildren(el("div", { class: "empty", text: "No temperatures in this sounding." })); return; }
+  const lo = Math.floor(Math.min(...ts) / 10) * 10, hi = Math.ceil(Math.max(...ts) / 10) * 10;
+  const X = (t) => m.l + ((t - lo) / (hi - lo)) * (W - m.l - m.r);
+  const Y = (p) => m.t + (Math.log(1015 / p) / Math.log(1015 / 100)) * (H - m.t - m.b);
+  const add = (tag, attrs) => { const n = document.createElementNS(svgNS, tag); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v); svg.append(n); return n; };
+  for (const p of [1000, 850, 700, 500, 300, 200, 100]) {
+    add("line", { class: "grid-line", x1: m.l, x2: W - m.r, y1: Y(p), y2: Y(p) });
+    add("text", { x: m.l - 6, y: Y(p) + 4, "text-anchor": "end", class: "tick" }).textContent = `${p}`;
+  }
+  for (let t = lo; t <= hi; t += 20) add("text", { x: X(t), y: H - 10, "text-anchor": "middle", class: "tick" }).textContent = `${t}°`;
+  const line = (key, colour, dash) => {
+    const pts = lv.filter((l) => l[key] !== null);
+    if (pts.length > 1) add("path", { d: pts.map((l, i) => `${i ? "L" : "M"}${X(l[key]).toFixed(1)},${Y(l.p).toFixed(1)}`).join(""), fill: "none", stroke: colour, "stroke-width": 2, "stroke-dasharray": dash || "none" });
+  };
+  line("t", "var(--s8)");
+  line("td", "var(--s3)", "5 3");
+}
+
+async function casesPage() {
+  const index = await load("cases/index");
+  const host = $("cases");
+  if (!index || !index.length) return;
+  const qs = new URLSearchParams(location.search);
+  const state = { id: index.some((c) => c.id === qs.get("case")) ? qs.get("case") : index[0].id };
+  const [st, bm] = await Promise.all([load("stations"), load("basemap")]);
+  const draw = async () => {
+    const c = await load(`cases/${state.id}`);
+    host.replaceChildren();
+    const sel = select("cs", "Event", index.map((x) => [x.id, x.title]), state.id);
+    host.append(el("div", { class: "controls" }, sel));
+    $("cs").onchange = (e) => { state.id = e.target.value; history.replaceState(null, "", `?case=${state.id}`); draw(); };
+    if (!c) return;
+    host.append(el("h2", { text: c.title, style: "margin-top:8px" }));
+    host.append(el("p", { class: "note", text: `Window ${c.window_local[0]} to ${c.window_local[1]}, Singapore time.` }));
+    const refs = el("p", { class: "note" });
+    c.sources.forEach((u, i) => { refs.append(el("a", { href: u, text: `Report ${i + 1}`, rel: "noopener" })); if (i < c.sources.length - 1) refs.append(document.createTextNode(" · ")); });
+    host.append(refs);
+    const rain = c.observed.rain_hourly;
+    const xs = rain.map((r) => r.t);
+    const grid = el("div", { class: "grid two" });
+    const rc = el("div"), wc = el("div");
+    grid.append(el("section", { class: "card" }, el("span", { class: "label", text: "Rain in the hour, network mean and wettest gauge (mm)" }), legend(["mean", "max"], { colour: (k) => (k === "mean" ? "var(--ink)" : "var(--s1)"), label: (k) => (k === "mean" ? "Network mean" : "Wettest gauge"), dash: () => null }), rc));
+    grid.append(el("section", { class: "card" }, el("span", { class: "label", text: "Gauges with rain in the hour" }), wc));
+    host.append(grid);
+    const fmtT = (t) => t.slice(5, 16).replace("-", "/");
+    lineChart(rc, { series: [
+      { id: "mean", label: "Network mean", colour: "var(--ink)", points: rain.map((r) => ({ x: r.t, y: r.mean, n: r.n })) },
+      { id: "max", label: "Wettest gauge", colour: "var(--s1)", points: rain.map((r) => ({ x: r.t, y: r.max })) },
+    ], xs, xFormat: fmtT, directLabels: false });
+    lineChart(wc, { series: [{ id: "wet", label: "Gauges wet", colour: "var(--ink)", points: rain.map((r) => ({ x: r.t, y: r.wet, n: r.n })) }], xs, xFormat: fmtT, yFormat: (v) => fmt(v, 0), directLabels: false });
+    if (c.forecasts_included && c.forecasts.rain_hourly) {
+      const fc = el("div");
+      host.append(el("section", { class: "card", style: "margin-top:20px" }, el("span", { class: "label", text: "Forecast network-mean rain by lead day, against the gauges" }), fc));
+      const ser = [{ id: "obs", label: "Gauges", colour: "var(--ink)", points: rain.map((r) => ({ x: r.t, y: r.mean })) }];
+      for (const [src, leads] of Object.entries(c.forecasts.rain_hourly)) {
+        if (!["gfs_global", "ecmwf_ifs025"].includes(src)) continue;
+        for (const [lead, pts] of Object.entries(leads)) ser.push({ id: `${src}-${lead}`, label: `${name(src)}, day ${lead}`, colour: colour(src), dash: lead === "1" ? null : lead === "3" ? "6 4" : "2 3", points: pts.map((p) => ({ x: p.t, y: p.mean })) });
+      }
+      lineChart(fc, { series: ser, xs, xFormat: fmtT, directLabels: false });
+    } else {
+      host.append(el("div", { class: "empty", style: "margin-top:20px", text: "What each forecast said appears here after the verification protocol is fixed. No forecast has been looked at for this event." }));
+    }
+    const lower = el("div", { class: "grid two", style: "margin-top:20px" });
+    const mapHost = el("div"), sndHost = el("div");
+    lower.append(el("section", { class: "card" }, el("span", { class: "label", text: "Event total at each gauge (mm)" }), mapHost));
+    const snd = c.soundings.find((s) => s.before_event) || c.soundings[0];
+    lower.append(el("section", { class: "card" }, el("span", { class: "label", text: snd ? `Changi sounding ${snd.time_utc.slice(0, 16).replace("T", " ")} UTC${snd.before_event ? ", last before the event" : ""}` : "Changi sounding" }),
+      legend(["t", "td"], { colour: (k) => (k === "t" ? "var(--s8)" : "var(--s3)"), label: (k) => (k === "t" ? "Temperature" : "Dew point"), dash: (k) => (k === "td" ? "5 3" : null) }), sndHost));
+    host.append(lower);
+    if (st && bm) {
+      const totals = Object.fromEntries(c.observed.rain_totals.map((r) => [r.station, r.mm]));
+      const maxT = Math.max(1, ...Object.values(totals));
+      const ramp = ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"];
+      const gauges = st.stations.filter((s) => totals[s.key] !== undefined);
+      stationMap(mapHost, { basemap: bm, stations: gauges, cells: {}, model: "", rule: "", view: "island",
+        colourBy: (s) => ramp[Math.min(ramp.length - 1, Math.floor((totals[s.key] / maxT) * ramp.length))] });
+      mapHost.append(el("p", { class: "note", text: `Darkest: ${fmt(maxT, 0)} mm. Gauges with complete hours only.` }));
+    }
+    if (snd) profile(sndHost, snd);
+  };
+  draw();
+}
+
 // ------------------------------------------------------------------ boot
 
-const pages = { scorecard, strata, stations, observations: observationsPage };
+const pages = { scorecard, strata, stations, observations: observationsPage, cases: casesPage };
 const footLimits = document.getElementById("limits");
 if (footLimits) footLimits.replaceWith(limitsPanel());
 if (pages[page]) pages[page]();

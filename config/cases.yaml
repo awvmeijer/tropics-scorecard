@@ -1,0 +1,35 @@
+# Case-study candidates (docs/cases/candidates.md). Times are Singapore local time.
+# Two or three are chosen for the final write-up; the replay tool runs for all of them.
+cases:
+  surge_2025_03:
+    title: Northeast monsoon surge, 19 to 20 March 2025
+    start: 2025-03-18 12:00
+    end: 2025-03-21 12:00
+    kind: wet
+    sources:
+      - https://www.nea.gov.sg/media/news/news/index/spore-records-wettest-ever-march-and-hottest-ever-june-and-november-in-2025
+      - https://www.thestar.com.my/aseanplus/aseanplus-news/2025/03/20/heavy-thundery-showers-across-singapore-on-march-20-morning-amid-monsoon-surge
+  surge_2025_01:
+    title: Northeast monsoon surge, 10 to 13 January 2025
+    start: 2025-01-09 12:00
+    end: 2025-01-14 00:00
+    kind: wet
+    sources:
+      - https://www.thestar.com.my/aseanplus/aseanplus-news/2025/01/12/prolonged-rainfall-on-jan-10-and-11-exceeded-singapores-monthly-average-pub
+      - https://mothership.sg/2025/01/january-monsoon-surge
+  squall_2024_09_17:
+    title: Sumatra squall, evening of 17 September 2024
+    start: 2024-09-17 12:00
+    end: 2024-09-18 06:00
+    kind: squall
+    sources:
+      - https://www.mse.gov.sg/latest-news/written-reply-to-pq-on-extreme-weather-conditions/
+      - https://mothership.sg/2025/03/2024-singapore-weather-events/
+  dry_2024_07:
+    title: Dry spell, 13 to 30 July 2024
+    start: 2024-07-13 00:00
+    end: 2024-07-31 00:00
+    kind: dry
+    sources:
+      - https://mothership.sg/2025/03/2024-singapore-weather-events/
+      - https://www.nea.gov.sg/media/news/advisories/index/less-wet-weather-expected-in-the-second-half-of-july-2024
