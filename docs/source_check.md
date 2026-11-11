@@ -15,6 +15,7 @@ Run on 10 November 2026 with real requests. Raw responses are in `data/raw/probe
 - Timestamps carry +08:00 (Singapore time).
 - Access: no key needed, but requests without a key are rate limited to roughly one every 7 to 10 seconds (HTTP 429 otherwise). The default Python User-Agent gets HTTP 403; a named client works.
 - Bulk download: none. The collection is API only.
+- Older v1 endpoint, checked 2026-11-11: `https://api.data.gov.sg/v1/environment/<variable>?date=YYYY-MM-DD` returns every reading of the day in one response (rain 287 readings per gauge, temperature 1,438 per station on 2024-03-01), with no pagination. The window leaves out the reading stamped 00:00; `date_time=YYYY-MM-DDT00:00:00` returns it. Values match v2 exactly. No HTTP 429 at one request every 2 seconds. Rain back to 2017 and temperature and wind at 1-minute detail now cost two requests per day per variable instead of 12 to 58.
 
 ### NOAA Integrated Surface Database, global hourly
 

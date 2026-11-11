@@ -36,3 +36,17 @@ def test_igra_fixed_width(tmp_path):
     assert h["release_hhmm"].iloc[0] == "2333" and h["latitude"].iloc[0] == 1.3679
     assert lv["pressure_hpa"].iloc[0] == 1007.84 and lv["temperature_c"].iloc[0] == 26.4
     assert pd.isna(lv["rh_pct"].iloc[0]) and lv["wind_speed_ms"].iloc[0] == 2.9
+
+
+def test_datagovsg_parse_v1_and_midnight_filter():
+    body = {"metadata": {"reading_unit": "deg C", "reading_type": "DBT 1M F",
+                         "stations": [{"id": "S1", "name": "X", "location": {"latitude": 1.3, "longitude": 103.8}}]},
+            "items": [{"timestamp": "2017-03-01T23:59:59+08:00", "readings": [{"station_id": "S1", "value": 26.0}]},
+                      {"timestamp": "2017-03-02T00:00:00+08:00", "readings": [{"station_id": "S1", "value": 25.9}]}]}
+    rows, stations = datagovsg.parse_v1(body, "air-temperature")
+    assert [r["value"] for r in rows] == [26.0, 25.9]
+    assert rows[0] == {"station_id": "S1", "time": "2017-03-01T23:59:59+08:00", "variable": "air-temperature",
+                       "value": 26.0, "unit": "deg C", "reading_type": "DBT 1M F"}
+    rows, _ = datagovsg.parse_v1(body, "air-temperature", day="2017-03-02")
+    assert [r["time"] for r in rows] == ["2017-03-02T00:00:00+08:00"]
+    assert stations[0]["longitude"] == 103.8

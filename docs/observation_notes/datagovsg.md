@@ -1,6 +1,6 @@
 # Observation note: Singapore station network (data.gov.sg, collection 1459)
 
-Status: first draft, 10 November 2026. Rain facts below come from 7 days (4 to 10 February 2024, 63 gauges, 124,768 readings), because the full download was still running. Numbers are rechecked when the download completes. Temperature, humidity and wind are not yet downloaded.
+Status: first draft, 10 November 2026, updated 11 November. Rain facts in the failure table come from 7 days (4 to 10 February 2024, 63 gauges, 124,768 readings) unless marked. Numbers are rechecked when the downloads complete. Humidity and wind direction are not downloaded.
 
 ## What it measures
 
@@ -14,7 +14,7 @@ Status: first draft, 10 November 2026. Rain facts below come from 7 days (4 to 1
 
 Timestamps carry +08:00 (Singapore time). Stored as UTC and local time.
 
-Temperature and wind speed are taken as one snapshot per hour, the 1-minute reading stamped on the hour (decided 10 November 2026, to stay inside the keyless rate limit). A snapshot request returns the reading for that exact minute for all stations. Forecast temperature and wind are also instantaneous values on the hour, so the two describe the same moment. The cost: a snapshot carries all the minute-to-minute noise of a gust or a passing shower, which an hourly mean would smooth out.
+Temperature and wind speed are stored at full 1-minute detail (changed 11 November 2026). The plan on 10 November was one snapshot per hour, to stay inside the keyless rate limit of the current (v2) endpoint. The older v1 endpoint (`https://api.data.gov.sg/v1/environment/<variable>?date=YYYY-MM-DD`) returns a whole day in one response, so every reading fits in the same time. Its values are identical to v2: on 2024-03-01 all 18,069 shared rain readings and all 296 shared temperature readings were equal. Its day window leaves out the reading stamped 00:00, which is fetched with a second request (`date_time=YYYY-MM-DDT00:00:00`). Which minute or minutes are paired with a forecast is a matching rule in the verification protocol (section 3.3).
 
 Rain stamps in 2024 fall on minutes 0, 5, ..., 55 with zero seconds. In the source check, days in January to April 2017 were stamped HH:M4:59 or HH:M9:59 instead (for example 23:59:59), and June 2017 onward used HH:M5:00. So the stamping convention changed in 2017. The provider does not say whether a stamp marks the start or the end of its 5 minutes. **Not yet confirmed.** For now the hourly sum treats a stamp as the end of its interval, which the 2017 convention (one second before the next 5-minute mark) suggests. Comparing hourly sums both ways against the Changi airport record is the planned test.
 
@@ -30,7 +30,7 @@ Rain stamps in 2024 fall on minutes 0, 5, ..., 55 with zero seconds. In the sour
 | Failure | What it looks like in the data | How often here | Check that catches it |
 |---|---|---|---|
 | Bucket size differs between gauges | 19 gauges (S203 to S229) report multiples of their own tip, from 0.197 to 0.204 mm. The other 44 report exact multiples of 0.2 mm. Each gauge is consistent. | 19 of 63 gauges | Not a fault. Recorded per gauge so a "one tip" rain threshold works for all |
-| Missing readings | Fewer than 288 five-minute readings in a day | 18.3 percent of gauge-days in the sample week | Count per hour; hours below the protocol's completeness limit are dropped |
+| Missing readings | Fewer than 288 five-minute readings in a day | 18.3 percent of gauge-days in the sample week. Over 11 February 2024 to 31 December 2025, 99.17 percent of station-hours with any reading had all 12 | Count per hour; hours below the protocol's completeness limit are dropped |
 | Gauge stuck dry (blocked funnel) | Zero for an hour while nearby gauges record a lot | Not yet measured | `stuck_dry`, **blocked**: needs `metrics.geo.haversine_km` |
 | Repeated non-zero value | Same non-zero 5-minute total for an hour or more | None in the sample week | `flatline` (zero ignored) |
 | Impossible value | Negative, or above 30 mm in 5 minutes | None in the sample week (largest 11.4 mm) | `range` |

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import gzip
 import json
+import sys
 import time
 import urllib.error
 import urllib.request
@@ -43,11 +44,13 @@ def get_bytes(url: str, throttle: Throttle | None = None, retries: int = 8, time
             if err.code == 404:
                 raise FetchError(f"404 {url}") from err
             if err.code in (429, 500, 502, 503, 504):
+                print(f"retry after HTTP {err.code} in {backoff:.0f}s: {url}", file=sys.stderr, flush=True)
                 time.sleep(backoff)
                 backoff = min(backoff * 1.5, 120)
                 continue
             raise FetchError(f"HTTP {err.code} {url}: {body[:200]!r}") from err
-        except (urllib.error.URLError, TimeoutError, ConnectionError):
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as err:
+            print(f"retry after {type(err).__name__} in {backoff:.0f}s: {url}", file=sys.stderr, flush=True)
             time.sleep(backoff)
             backoff = min(backoff * 1.5, 120)
     raise FetchError(f"gave up after {retries} attempts: {url}")
@@ -59,7 +62,10 @@ def cached_json(url: str, path: Path, throttle: Throttle | None = None) -> dict:
         with gzip.open(path, "rt", encoding="utf-8") as fh:
             return json.load(fh)
     raw = get_bytes(url, throttle)
-    data = json.loads(raw)
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as err:
+        raise FetchError(f"not JSON from {url}: {raw[:200]!r}") from err
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
     with gzip.open(tmp, "wb") as fh:
