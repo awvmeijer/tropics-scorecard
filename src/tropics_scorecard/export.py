@@ -20,7 +20,14 @@ from .match import observations
 from .paths import RAW, ROOT, TABLES, load_config
 
 OUT = ROOT / "dashboard" / "data"
-BBOX = {"south": 0.5, "north": 2.6, "west": 102.4, "east": 105.1}
+MAP_PAD_DEG = 0.1
+
+
+def bbox(cfg: dict) -> dict:
+    """The study region from config, padded a little so coastlines are not cut at stations."""
+    b = cfg["region"]["bounding_box"]
+    return {"south": b["south"] - MAP_PAD_DEG, "north": b["north"] + MAP_PAD_DEG,
+            "west": b["west"] - MAP_PAD_DEG, "east": b["east"] + MAP_PAD_DEG}
 
 
 def _write(name: str, payload) -> Path:
@@ -100,16 +107,17 @@ def _simplify(pts, tol):
     return _simplify(pts[: idx + 1], tol)[:-1] + _simplify(pts[idx:], tol)
 
 
-def basemap(tol: float = 0.002) -> Path | None:
+def basemap(cfg: dict, tol: float = 0.002) -> Path | None:
     src = RAW / "basemap" / "ne_10m_land.geojson"
     if not src.exists():
         return None
+    box = bbox(cfg)
     rings = []
     for f in json.loads(src.read_text())["features"]:
         g = f["geometry"]
         for poly in g["coordinates"] if g["type"] == "MultiPolygon" else [g["coordinates"]]:
             for ring in poly[:1]:  # outer rings; lakes do not matter at this scale
-                c = _clip(ring, BBOX)
+                c = _clip(ring, box)
                 if len(c) > 1 and c[0] == c[-1]:
                     c = c[:-1]
                 if len(c) < 3:
@@ -119,7 +127,7 @@ def basemap(tol: float = 0.002) -> Path | None:
                 s = _simplify(c[: k + 1], tol)[:-1] + _simplify(c[k:] + [c[0]], tol)
                 if len(s) >= 4:
                     rings.append([[round(x, 4), round(y, 4)] for x, y in s])
-    return _write("basemap.json", {"bbox": BBOX, "rings": rings,
+    return _write("basemap.json", {"bbox": box, "rings": rings,
                                    "source": "Natural Earth 1:10m land, public domain"})
 
 
@@ -273,7 +281,9 @@ def downloads(cfg: dict) -> dict:
     from .ingest.datagovsg import CACHE
 
     per = cfg["period"]
-    test = (dt.date(2024, 2, 4), dt.date.fromisoformat(str(per["day_level_lead_times"]["end"])))
+    # Observations start early enough for persistence at the longest lead day.
+    first = dt.date.fromisoformat(str(per["day_level_lead_times"]["start"])) - dt.timedelta(days=max(cfg["lead_times"]["days"]))
+    test = (first, dt.date.fromisoformat(str(per["day_level_lead_times"]["end"])))
     clim = (dt.date.fromisoformat(str(per["climatology_years"]["start"])), dt.date.fromisoformat(str(per["climatology_years"]["end"])))
 
     def done(folder: Path, span) -> int:
@@ -318,7 +328,7 @@ def meta(cfg: dict) -> Path:
 
 def main(argv=None) -> int:
     cfg = load_config()
-    for fn in (basemap, stations, lambda: coverage(cfg), qc_summary, lambda: diurnal(cfg), scores, lambda: meta(cfg)):
+    for fn in (lambda: basemap(cfg), stations, lambda: coverage(cfg), qc_summary, lambda: diurnal(cfg), scores, lambda: meta(cfg)):
         p = fn()
         print(p if p is None else f"{p.relative_to(ROOT)} {p.stat().st_size // 1024} kB", flush=True)
     return 0

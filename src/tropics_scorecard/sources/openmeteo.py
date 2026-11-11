@@ -28,7 +28,7 @@ class OpenMeteoModel(ForecastSource):
         g = g[(g["model"] == self.model) & (g["cell_rule"] == self.cell_rule)]
         if g.empty:
             raise LookupError(f"no grid cells for {self.model} under rule {self.cell_rule}: run ingest.openmeteo grid")
-        g = g.assign(cell_lat=g["cell_lat"].round(4), cell_lon=g["cell_lon"].round(4))
+        # grid.parquet and the forecast tables hold coordinates rounded once to CELL_DECIMALS.
         return g[["station_key", "cell_lat", "cell_lon"]].drop_duplicates("station_key")
 
     def _table(self, kind: str, variable: str) -> pd.DataFrame:

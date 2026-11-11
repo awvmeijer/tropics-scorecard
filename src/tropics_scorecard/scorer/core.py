@@ -320,8 +320,8 @@ def run(source: ForecastSource | str, cfg: dict, variables=VARIABLES, lead_kinds
         thresholds = tuple(cfg["rain_thresholds_mm_per_hour"]) if v == "rain_hourly" else ()
         for kind in lead_kinds:
             leads = cfg["lead_times"]["days"] if kind == "day" else range(1, int(cfg["lead_times"]["hours"]["max"]) + 1)
+            src = get_source(source, cfg) if isinstance(source, str) else source  # caches live in the source
             for lead in leads:
-                src = get_source(source, cfg) if isinstance(source, str) else source
                 p = make_pairs(src, v, cases_for(cfg, v, kind, int(lead)), thresholds)
                 meta = {"source": src.name, "variable": v, "lead_kind": kind, "lead": int(lead), "qc": "flags_removed"}
                 rows += score_pairs(p, meta, cfg, ("all", "hour_local", "regime"), thresholds=thresholds)

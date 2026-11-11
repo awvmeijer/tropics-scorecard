@@ -55,6 +55,7 @@ CELL_RULES = ("nearest", "land")
 LIMITS = {60: 600, 3600: 5000, 86400: 10000}  # window in seconds -> calls
 SHARE = 0.8
 CHUNK_DAYS = 91
+CELL_DECIMALS = 4  # cell coordinates are rounded once, here and in store.openmeteo, and joined exactly
 GRID_PROBE_DAY = dt.date(2026, 10, 1)
 
 
@@ -210,8 +211,8 @@ def grid(cfg: dict, ledger: Ledger, polite: Polite, batch: int = 50) -> Path:
                     # With elevation=nan the reported elevation is the cell's own mean height.
                     # Otherwise it is the elevation model's value at the station point.
                     rows.append({"station_key": s["key"], "station_lat": s["latitude"], "station_lon": s["longitude"],
-                                 "model": m["id"], "cell_rule": rule, "cell_lat": round(b["latitude"], 5),
-                                 "cell_lon": round(b["longitude"], 5),
+                                 "model": m["id"], "cell_rule": rule, "cell_lat": round(b["latitude"], CELL_DECIMALS),
+                                 "cell_lon": round(b["longitude"], CELL_DECIMALS),
                                  "cell_elevation_m": b.get("elevation") if rule == "nearest" else None,
                                  "point_elevation_m": b.get("elevation") if rule != "nearest" else None})
     out = TABLES / "openmeteo"
@@ -277,8 +278,10 @@ def previous(cfg: dict, ledger: Ledger, polite: Polite) -> int:
 
 # ---------------------------------------------------------------- Single Runs
 
-def single(cfg: dict, ledger: Ledger, polite: Polite, run_hours=(0, 12)) -> int:
-    """Whole runs for the hour-level period, for the cells that hold data.gov.sg stations."""
+def single(cfg: dict, ledger: Ledger, polite: Polite, run_hours=None) -> int:
+    """Whole runs for the hour-level period, for the cells that hold data.gov.sg stations.
+    Run hours come from config lead_times.single_run_hours_utc, the same list the scorer uses."""
+    run_hours = tuple(run_hours or cfg["lead_times"]["single_run_hours_utc"])
     per = cfg["period"]["hour_level_lead_times"]
     start = dt.date.fromisoformat(str(per["start"]))
     end = dt.date.fromisoformat(str(per["end"]))

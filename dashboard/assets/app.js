@@ -267,7 +267,8 @@ export function heatmap(host, { rows, cols, values, rowLabel = (r) => r, colLabe
   host.append(svg);
   // Sequential, one hue light to dark. Empty months are the neutral surface.
   const ramp = ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"];
-  const fill = (v) => (v === null || v === undefined || v <= 0 ? "var(--none)" : ramp[Math.min(ramp.length - 1, Math.floor(v * ramp.length))]);
+  // Missing is the neutral surface; 0 percent usable is data, drawn as the first step with a red edge.
+  const fill = (v) => (v === null || v === undefined ? "var(--none)" : ramp[Math.min(ramp.length - 1, Math.floor(v * ramp.length))]);
   cols.forEach((c, j) => {
     if (j === 0 || c.endsWith("-01")) sv("text", { x: m.l + j * (cw + gap), y: 12, class: "tick" }, svg).textContent = j === 0 ? c : c.slice(0, 4);
   });
@@ -276,7 +277,8 @@ export function heatmap(host, { rows, cols, values, rowLabel = (r) => r, colLabe
     sv("text", { x: m.l - 6, y: m.t + i * (ch + gap) + ch - 1, "text-anchor": "end", class: "tick", style: "font-size:7px" }, svg).textContent = rows.length > 40 && i % 2 ? "" : rowLabel(r);
     cols.forEach((c, j) => {
       const v = values[i][j];
-      const rect = sv("rect", { x: m.l + j * (cw + gap), y: m.t + i * (ch + gap), width: cw, height: ch, rx: 1, fill: fill(v) }, svg);
+      const rect = sv("rect", { x: m.l + j * (cw + gap), y: m.t + i * (ch + gap), width: cw, height: ch, rx: 1, fill: fill(v),
+        stroke: v === 0 ? "var(--s8)" : null, "stroke-width": v === 0 ? 1 : null }, svg);
       rect.addEventListener("pointermove", (e) => {
         const hb = host.getBoundingClientRect();
         tip.show(e.clientX - hb.left, e.clientY - hb.top - 40, `${rowLabel(r)} · ${colLabel(c)}`, [{ value: v === null || v === undefined ? "no data" : valueFormat(v), label: "of hours usable" }]);
@@ -290,7 +292,7 @@ export function heatmap(host, { rows, cols, values, rowLabel = (r) => r, colLabe
   steps.style.width = `${ramp.length * 16 + 16}px`;
   sv("rect", { x: 0, y: 0, width: 14, height: 10, rx: 2, fill: "var(--none)" }, steps);
   ramp.forEach((c, i) => sv("rect", { x: 16 + i * 16, y: 0, width: 14, height: 10, rx: 2, fill: c }, steps));
-  key.append(el("span", { class: "key" }, el("span", { text: "No data" }), steps, el("span", { text: "100% of hours usable" })));
+  key.append(el("span", { class: "key" }, el("span", { text: "No data" }), steps, el("span", { text: "100% of hours usable. Red edge: data present, none usable" })));
   host.append(key);
 }
 

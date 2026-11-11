@@ -22,13 +22,15 @@ OUT = TABLES / "datagovsg"
 
 
 def _pages(variable: str, year: int | None = None):
-    """v2 pages of complete days. A day that also has a complete v1 download is read from
-    v1 only, so no reading is counted twice."""
+    """v2 pages of complete days. A day whose v1 download holds the whole-day file is read
+    from v1 only, so no reading is counted twice. A v1 day without that file (a 404, or only
+    the midnight reading) does not hide the v2 pages."""
     root = CACHE / variable
     pattern = f"{year}/*/p*.json.gz" if year else "*/*/p*.json.gz"
     for path in sorted(root.glob(pattern)):
         day = path.parent
-        if (day / "DONE").exists() and not (CACHE / f"{variable}-v1" / day.parent.name / day.name / "DONE").exists():
+        v1 = CACHE / f"{variable}-v1" / day.parent.name / day.name
+        if (day / "DONE").exists() and not ((v1 / "DONE").exists() and (v1 / "day.json.gz").exists()):
             yield path
 
 

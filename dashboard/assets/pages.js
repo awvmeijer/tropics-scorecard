@@ -1,7 +1,7 @@
 import {
   MAIN, METRICS, REGIMES, REGIME_SHORT, SOURCES, VARIABLES, VIEWS, el, fmt, fmtInt, heatmap, legend, limitsPanel, lineChart, load,
   pick, rowsOf, stationMap, statusPanel, table,
-} from "./app.js?v=5";
+} from "./app.js?v=7";
 
 const page = document.body.dataset.page;
 const $ = (id) => document.getElementById(id);
@@ -96,14 +96,15 @@ async function scorecard() {
             el("div", { class: "verdict", text: verdict(r, true) }));
         } }))], combos),
     );
-    const hsel = pick(rows, { ...base, variable: state.variable, metric: state.metric === "bias" ? "bias" : cm, lead_kind: "hour", against: null })
-      .filter((r) => (cm === "mae" || state.metric === "bias" ? r.threshold === null : r.threshold === state.threshold));
+    const hsel = pick(rows, { ...base, variable: state.variable, metric: state.metric, lead_kind: "hour", against: null })
+      .filter((r) => (thr === null ? r.threshold === null : r.threshold === thr));
     const hs = ["gfs_global", "ecmwf_ifs025", "persistence_issue", "persistence", "climatology"];
     const hleads = [...new Set(hsel.map((r) => r.lead))].sort((a, b) => a - b);
     hours.replaceChildren();
     const hc = el("div");
     hours.append(legend(hs.filter((id) => hsel.some((r) => r.source === id))), hc);
-    lineChart(hc, { series: series(hsel, hs, "lead"), xs: hleads, xFormat: (h) => `${h} h`, directLabels: false, yFormat: (v) => fmt(v, cm === "brier" ? 3 : 2) });
+    $("hour-lead-title").textContent = `${METRICS[state.metric].label}${unit(state.variable, state.metric)} by lead hour`;
+    lineChart(hc, { series: series(hsel, hs, "lead"), xs: hleads, xFormat: (h) => `${h} h`, directLabels: false, yFormat: (v) => fmt(v, state.metric === "brier" ? 3 : 2), zero: state.metric === "bias" });
     const sec = pick(rows, { ...base, variable: state.variable, metric: cm, lead_kind: "day", against: null })
       .filter((r) => ["ecmwf_aifs025_single", "ecmwf_ifs"].includes(r.source) && (cm === "mae" ? r.threshold === null : r.threshold === state.threshold));
     extra.replaceChildren(table([{ label: "Model", get: (r) => name(r.source) }, { label: "Lead", get: (r) => `Day ${r.lead}` },
@@ -155,6 +156,9 @@ async function stations() {
   const rows = rowsOf(scores);
   const models = Object.keys(st.cells || {});
   const state = { model: models.includes("ecmwf_ifs025") ? "ecmwf_ifs025" : models[0], rule: (meta && meta.cell_rule) || "nearest", variable: "all", view: "island" };
+  const qs = new URLSearchParams(location.search);  // shareable views, for example ?rule=land
+  const allowed = { model: models, rule: ["nearest", "land"], variable: ["all", ...Object.keys(VARIABLES)], view: Object.keys(VIEWS) };
+  for (const [k, ok] of Object.entries(allowed)) if (ok.includes(qs.get(k))) state[k] = qs.get(k);
   const draw = () => {
     $("controls").replaceChildren(
       select("mo", "Model grid", models.map((m) => [m, name(m)]), state.model),
@@ -171,7 +175,7 @@ async function stations() {
     const other = state.rule === "land" ? "nearest" : "land";
     const a = (st.cells[state.model] || {})[state.rule] || {}, b = (st.cells[state.model] || {})[other] || {};
     const differ = list.filter((s) => a[s.key] && b[s.key] && a[s.key].join() !== b[s.key].join()).length;
-    $("map-note").textContent = `${list.length} stations use ${out.cellsUsed} cells of the ${name(state.model)} grid under the ${state.rule} rule. ${differ} of them get a different cell under the ${other} rule. Circles are network stations, squares are airports; dashed squares are grid cells.`;
+    $("map-note").textContent = `${list.length} stations use ${out.cellsUsed} cells of the ${name(state.model)} grid under the ${state.rule} rule. ${differ} of them get a different cell under the ${other} rule. Circles are network stations, squares are airports; dashed squares are grid cells. Coastline from Natural Earth at 1:10 million, so recent reclaimed land is missing.`;
     $("station-table").replaceChildren(table([
       { label: "Station", get: (s) => s.id }, { label: "Name", get: (s) => s.name },
       { label: "Network", get: (s) => (s.network === "isd" ? "Airport (ISD)" : "data.gov.sg") },

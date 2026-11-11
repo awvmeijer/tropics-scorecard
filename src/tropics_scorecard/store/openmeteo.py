@@ -22,7 +22,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from ..ingest.openmeteo import CACHE, VARIABLES
+from ..ingest.openmeteo import CACHE, CELL_DECIMALS, VARIABLES
 from ..paths import TABLES
 
 OUT = TABLES / "openmeteo"
@@ -49,8 +49,8 @@ def parse_previous(body: dict, model: str) -> pd.DataFrame:
         return pd.DataFrame(columns=["model", "cell_lat", "cell_lon", "cell_elevation_m", "valid_time", "variable", "lead_day", "value"])
     df = pd.concat(frames, ignore_index=True)
     df.insert(0, "cell_elevation_m", body.get("elevation"))
-    df.insert(0, "cell_lon", round(float(body["longitude"]), 4))
-    df.insert(0, "cell_lat", round(float(body["latitude"]), 4))
+    df.insert(0, "cell_lon", round(float(body["longitude"]), CELL_DECIMALS))
+    df.insert(0, "cell_lat", round(float(body["latitude"]), CELL_DECIMALS))
     df.insert(0, "model", model)
     return df
 
@@ -66,8 +66,8 @@ def parse_single(body: dict | list, model: str, run_time: dt.datetime) -> pd.Dat
             if key not in OURS:
                 continue
             frames.append(pd.DataFrame({
-                "model": model, "run_time": run, "cell_lat": round(float(loc["latitude"]), 4),
-                "cell_lon": round(float(loc["longitude"]), 4), "cell_elevation_m": loc.get("elevation"),
+                "model": model, "run_time": run, "cell_lat": round(float(loc["latitude"]), CELL_DECIMALS),
+                "cell_lon": round(float(loc["longitude"]), CELL_DECIMALS), "cell_elevation_m": loc.get("elevation"),
                 "valid_time": times, "variable": OURS[key], "lead_hours": lead,
                 "value": pd.to_numeric(pd.Series(values), errors="coerce")}))
     if not frames:
@@ -97,6 +97,8 @@ def build_single(model: str) -> Path | None:
         run = dt.datetime.strptime(p.parent.name, "%Y-%m-%dT%H")
         frames.append(parse_single(_read(p), model, run))
     df = pd.concat(frames, ignore_index=True)
+    # A run can be cached twice when the cell list changes (a new station); keep one copy.
+    df = df.drop_duplicates(["run_time", "cell_lat", "cell_lon", "valid_time", "variable"], keep="last")
     OUT.mkdir(parents=True, exist_ok=True)
     path = OUT / f"single_{model}.parquet"
     df.to_parquet(path, index=False)

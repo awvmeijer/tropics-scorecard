@@ -243,3 +243,40 @@ def test_parse_previous_and_single():
                "hourly": {"time": ["2024-03-01T00:00", "2024-03-01T03:00"], "wind_speed_10m": [2.0, 3.0]}}]
     s = om_store.parse_single(single, "m", dt.datetime(2024, 3, 1, 0))
     assert s["lead_hours"].tolist() == [0, 3] and set(s["variable"]) == {"wind_speed_10m"}
+
+
+def test_v2_day_kept_when_v1_lacks_the_day_file(tmp_path, monkeypatch):
+    from tropics_scorecard.store import datagovsg as store
+
+    monkeypatch.setattr(store, "CACHE", tmp_path)
+    for day in ("2025-03-14", "2025-03-15"):
+        d = tmp_path / "rainfall" / "2025" / day
+        d.mkdir(parents=True)
+        (d / "p001.json.gz").write_bytes(b"")
+        (d / "DONE").write_text("1\n")
+    only_midnight = tmp_path / "rainfall-v1" / "2025" / "2025-03-14"
+    only_midnight.mkdir(parents=True)
+    (only_midnight / "midnight.json.gz").write_bytes(b"")
+    (only_midnight / "DONE").write_text("1\n")
+    full = tmp_path / "rainfall-v1" / "2025" / "2025-03-15"
+    full.mkdir(parents=True)
+    (full / "day.json.gz").write_bytes(b"")
+    (full / "DONE").write_text("2\n")
+    assert [p.parent.name for p in store._pages("rainfall", 2025)] == ["2025-03-14"]
+
+
+def test_single_runs_cached_twice_are_kept_once(tmp_path, monkeypatch):
+    import gzip
+    import json
+
+    monkeypatch.setattr(om_store, "CACHE", tmp_path)
+    monkeypatch.setattr(om_store, "OUT", tmp_path / "out")
+    loc = {"latitude": 1.25, "longitude": 104.0, "elevation": 0.0,
+           "hourly": {"time": ["2026-04-02T01:00"], "temperature_2m": [27.0]}}
+    folder = tmp_path / "single" / "m" / "2026" / "2026-04-02T00"
+    folder.mkdir(parents=True)
+    for name in ("aaa.json.gz", "bbb.json.gz"):
+        with gzip.open(folder / name, "wt") as fh:
+            json.dump([loc], fh)
+    df = pd.read_parquet(om_store.build_single("m"))
+    assert len(df) == 1 and df["lead_hours"].tolist() == [1]
