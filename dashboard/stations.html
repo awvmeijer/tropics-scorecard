@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stations · Tropics Scorecard</title>
+  <meta name="description" content="Weather forecasts for Singapore scored against station observations, with intervals.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="assets/style.css?v=5">
+</head>
+<body data-page="stations">
+  <header class="site">
+    <div class="wrap">
+      <a class="brand" href="index.html">Tropics Scorecard</a>
+      <nav class="site" aria-label="Pages">
+      <a href="index.html">Scorecard</a>
+      <a href="strata.html">Hour and season</a>
+      <a href="stations.html" aria-current="page">Stations</a>
+      <a href="observations.html">Observations</a>
+      <a href="cases.html">Case studies</a>
+      <a href="method.html">Method</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <div class="wrap">
+      <h1>Where the measurements are</h1>
+      <p class="lede">Rain gauges and weather stations of the Singapore network, and the airports around it. Each station is paired with one forecast grid cell. Which cell is a choice, and it matters.</p>
+      <div class="controls" id="controls"></div>
+      <section class="card"><div id="map"></div><p class="note" id="map-note"></p></section>
+      <h2>All stations</h2>
+      <div id="station-table"></div>
+      <div id="limits"></div>
+    </div>
+  </main>
+  <footer class="site">
+    <div class="wrap">
+      <p>Observations: Meteorological Service Singapore via <a href="https://data.gov.sg">data.gov.sg</a> (Singapore Open Data Licence), NOAA Integrated Surface Database and Integrated Global Radiosonde Archive. Forecasts: <a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a> (CC BY 4.0), regridded to stations by nearest cell, no other changes. Coastline: Natural Earth.</p>
+    </div>
+  </footer>
+  <script type="module" src="assets/pages.js?v=5"></script>
+</body>
+</html>

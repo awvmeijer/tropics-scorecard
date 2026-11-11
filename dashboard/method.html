@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Method · Tropics Scorecard</title>
+  <meta name="description" content="Weather forecasts for Singapore scored against station observations, with intervals.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="assets/style.css?v=5">
+</head>
+<body data-page="method">
+  <header class="site">
+    <div class="wrap">
+      <a class="brand" href="index.html">Tropics Scorecard</a>
+      <nav class="site" aria-label="Pages">
+      <a href="index.html">Scorecard</a>
+      <a href="strata.html">Hour and season</a>
+      <a href="stations.html">Stations</a>
+      <a href="observations.html">Observations</a>
+      <a href="cases.html">Case studies</a>
+      <a href="method.html" aria-current="page">Method</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <div class="wrap">
+      <h1>Method</h1>
+      <p class="lede">The verification protocol was written before any forecast was scored. These are its main choices.</p>
+      <dl class="kv">
+        <dt>Reference</dt><dd>Station observations after quality control. Not a reanalysis.</dd>
+        <dt>Test period</dt><dd>Valid times 11 February 2024 to 31 October 2026 (UTC).</dd>
+        <dt>Forecasts</dt><dd>GFS and ECMWF IFS 0.25° from the Open-Meteo Previous Runs archive, lead days 1, 2, 3, 5 and 7; whole runs from April 2026.</dd>
+        <dt>Baselines</dt><dd>Persistence (the observation 24N hours earlier) and climatology (station, month and local hour, 2017 to 2023).</dd>
+        <dt>Matching</dt><dd>One grid cell per station, raw model values, no interpolation. Rain summed from 5-minute gauge totals to the hour; an hour counts only when complete.</dd>
+        <dt>Intervals</dt><dd>Moving-block bootstrap over days, on paired differences between two forecasts on the same cases. 2000 resamples, 95 percent.</dd>
+      </dl>
+      <p class="note" style="margin-top:16px">The full protocol, with the evidence behind each choice and a dated change log, is in the repository: docs/verification_protocol.md.</p>
+      <div id="limits"></div>
+    </div>
+  </main>
+  <footer class="site">
+    <div class="wrap">
+      <p>Observations: Meteorological Service Singapore via <a href="https://data.gov.sg">data.gov.sg</a> (Singapore Open Data Licence), NOAA Integrated Surface Database and Integrated Global Radiosonde Archive. Forecasts: <a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a> (CC BY 4.0), regridded to stations by nearest cell, no other changes. Coastline: Natural Earth.</p>
+    </div>
+  </footer>
+  <script type="module" src="assets/pages.js?v=5"></script>
+</body>
+</html>

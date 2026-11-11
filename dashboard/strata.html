@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hour and season · Tropics Scorecard</title>
+  <meta name="description" content="Weather forecasts for Singapore scored against station observations, with intervals.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="assets/style.css?v=5">
+</head>
+<body data-page="strata">
+  <header class="site">
+    <div class="wrap">
+      <a class="brand" href="index.html">Tropics Scorecard</a>
+      <nav class="site" aria-label="Pages">
+      <a href="index.html">Scorecard</a>
+      <a href="strata.html" aria-current="page">Hour and season</a>
+      <a href="stations.html">Stations</a>
+      <a href="observations.html">Observations</a>
+      <a href="cases.html">Case studies</a>
+      <a href="method.html">Method</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <div class="wrap">
+      <h1>When does the forecast go wrong?</h1>
+      <p class="lede">The same scores, split by local hour of day and by monsoon phase. Afternoon convection is the expected weak spot. The charts show what was found.</p>
+      <div class="controls" id="controls"></div>
+      <div class="grid two">
+        <section class="card"><span class="label">By local hour (Singapore time)</span><div id="hour-chart"></div></section>
+        <section class="card"><span class="label">By monsoon phase</span><div id="regime-chart"></div>
+          <p class="note">Phases on fixed calendar dates from the Meteorological Service Singapore. Dots are scores, lines their 95 percent intervals.</p></section>
+      </div>
+      <div id="limits"></div>
+    </div>
+  </main>
+  <footer class="site">
+    <div class="wrap">
+      <p>Observations: Meteorological Service Singapore via <a href="https://data.gov.sg">data.gov.sg</a> (Singapore Open Data Licence), NOAA Integrated Surface Database and Integrated Global Radiosonde Archive. Forecasts: <a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a> (CC BY 4.0), regridded to stations by nearest cell, no other changes. Coastline: Natural Earth.</p>
+    </div>
+  </footer>
+  <script type="module" src="assets/pages.js?v=5"></script>
+</body>
+</html>
