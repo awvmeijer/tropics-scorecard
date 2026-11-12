@@ -253,6 +253,19 @@ def chunks(start: dt.date, end: dt.date, days: int = CHUNK_DAYS):
         a = b + dt.timedelta(days=1)
 
 
+def _previous_chunk(model: str, cell, a: dt.date, b: dt.date, hourly: list[str], folder: Path,
+                    ledger: Ledger, polite: Polite) -> None:
+    params = {
+        "latitude": f"{cell[0]:.4f}", "longitude": f"{cell[1]:.4f}", "hourly": ",".join(hourly),
+        "models": model, "cell_selection": "nearest", "elevation": "nan", "timezone": "GMT",
+        "wind_speed_unit": "ms", "start_date": a.isoformat(), "end_date": b.isoformat(),
+    }
+    body = fetch(PREVIOUS, params, folder / f"{a}_{b}.json.gz", weight(1, len(hourly), (b - a).days + 1), ledger, polite)
+    got = (round(body["latitude"], 4), round(body["longitude"], 4))
+    if math.dist(got, (round(cell[0], 4), round(cell[1], 4))) > 1e-3:
+        raise FetchError(f"asked for cell {cell}, got {got} ({model})")
+
+
 def previous(cfg: dict, ledger: Ledger, polite: Polite) -> int:
     end = dt.date.fromisoformat(str(cfg["period"]["day_level_lead_times"]["end"]))
     hourly = previous_variables(cfg)
@@ -261,16 +274,17 @@ def previous(cfg: dict, ledger: Ledger, polite: Polite) -> int:
         cs = cells(m["id"])
         for a, b in chunks(m["from"], end):
             for cell in cs:
-                path = _cell_dir("previous", m["id"], cell) / f"{a}_{b}.json.gz"
-                params = {
-                    "latitude": f"{cell[0]:.4f}", "longitude": f"{cell[1]:.4f}", "hourly": ",".join(hourly),
-                    "models": m["id"], "cell_selection": "nearest", "elevation": "nan", "timezone": "GMT",
-                    "wind_speed_unit": "ms", "start_date": a.isoformat(), "end_date": b.isoformat(),
-                }
-                body = fetch(PREVIOUS, params, path, weight(1, len(hourly), (b - a).days + 1), ledger, polite)
-                got = (round(body["latitude"], 4), round(body["longitude"], 4))
-                if math.dist(got, (round(cell[0], 4), round(cell[1], 4))) > 1e-3:
-                    raise FetchError(f"asked for cell {cell}, got {got} ({m['id']})")
+                folder = _cell_dir("previous", m["id"], cell)
+                try:
+                    _previous_chunk(m["id"], cell, a, b, hourly, folder, ledger, polite)
+                except FetchError as err:
+                    # The server can time out on a long chunk; fall back to monthly pieces.
+                    # store.openmeteo reads every file in the folder, so sizes may mix.
+                    if "timeoutReached" not in str(err):
+                        raise
+                    print(f"splitting {m['id']} {cell} {a}..{b} after: {str(err)[-60:]}", flush=True)
+                    for a2, b2 in chunks(a, b, 31):
+                        _previous_chunk(m["id"], cell, a2, b2, hourly, folder, ledger, polite)
                 n += 1
             print(f"previous {m['id']} {a}..{b} cells={len(cs)}", flush=True)
     return n
