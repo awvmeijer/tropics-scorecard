@@ -95,7 +95,7 @@ def add_counter(site: Path) -> None:
     """Put the GoatCounter tag on the hosted pages, if config names an account.
 
     It counts page views without cookies or personal data. A link such as
-    ?ref=jeff shows as its own referrer, so one shared link can be told apart.
+    ?ref=name shows as its own referrer, so one shared link can be told apart.
     """
     from tropics_scorecard.paths import load_config
 
