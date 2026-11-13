@@ -87,6 +87,28 @@ def main() -> None:
     shutil.rmtree(site, ignore_errors=True)
     shutil.copytree(ROOT / "dashboard", site, ignore=shutil.ignore_patterns("story.html"))
     (ROOT / "docs" / ".nojekyll").write_text("")
+    add_counter(site)
+
+
+def add_counter(site: Path) -> None:
+    """Put the GoatCounter tag on the hosted pages, if config names an account.
+
+    It counts page views without cookies or personal data. A link such as
+    ?ref=jeff shows as its own referrer, so one shared link can be told apart.
+    """
+    from tropics_scorecard.paths import load_config
+
+    code = ((load_config().get("analytics") or {}).get("goatcounter_code") or "").strip()
+    if not code:
+        return
+    tag = (f'<script data-goatcounter="https://{code}.goatcounter.com/count" '
+           'async src="https://gc.zgo.at/count.js"></script>')
+    for page in [ROOT / "docs" / "index.html", *site.glob("*.html")]:
+        html = page.read_text(encoding="utf-8")
+        if "data-goatcounter" in html:
+            continue
+        html = html.replace("</body>", tag + "\n</body>") if "</body>" in html else html + "\n" + tag + "\n"
+        page.write_text(html, encoding="utf-8")
     print("wrote dashboard/story.html", len(out) // 1024, "kB", counts)
 
 
