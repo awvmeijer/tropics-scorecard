@@ -24,7 +24,7 @@ Every model is further from the measured wind than both baselines, by 0.3 to 0.8
 
 I do not read this as the models failing at wind. A grid cell 13 to 28 km wide, part of it open water, is being compared with a mast between buildings. They are not measuring the same thing. But anyone who needs the wind at that mast should know the raw forecast does not give it to them.
 
-## 4. Which grid cell you pick matters as much as which model you pick
+## 4. Which grid cell you pick matters more than which model you pick
 
 A station has to be paired with one cell of the model's grid. There are two sensible rules: take the cell the station sits in, or take the nearest cell the model treats as land. For ECMWF the land rule moves 53 of Singapore's 54 southern stations to a cell centred in Johor, in another country.
 

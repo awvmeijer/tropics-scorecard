@@ -28,9 +28,9 @@ This repository scores hourly rain, temperature and wind forecasts for Singapore
   </picture>
 </p>
 
-- **At the surface in the tropics, operational forecasts barely beat a free guess.** No model is detectably better than climatology for temperature or wind at a station, at any lead time. For rain, ECMWF gains about 12 percent.
-- **The events that matter most are where they miss.** ECMWF's heaviest 6-hour rain totals are a third of what the gauges measured, even with the gauges averaged over the model's own grid cell. Acting on the best forecast for heavy rain keeps about 13 percent of what a perfect one would save. A squall line put 10 mm in an hour on half of Singapore's gauges, and no forecast had it at any lead time.
-- **The judge needs as much care as the model.** Judged by the ERA5 reanalysis instead of the instruments, the order of GFS and ECMWF flips for temperature, and ERA5 itself is further from the thermometers than a free climatology. One matching choice moves a score as much as switching models, and two of the first "wins" were faults in the forecast archive.
+- **At the surface in the tropics, only the rain forecasts beat a free guess, and only just.** No model is detectably better than climatology for temperature or wind at a station, at any lead time. For rain, ECMWF's error is about 12 percent lower one day ahead.
+- **The events that matter most are where they miss.** ECMWF's heaviest 6-hour rain totals are a third of what the gauges measured, even with the gauges averaged over the model's own grid cell. Acting on the best forecast for heavy rain keeps at most 13 percent of what a perfect one would save. A squall line put 10 mm in an hour on half of Singapore's gauges, and no forecast had it at any lead time.
+- **The judge needs as much care as the model.** Judged by the ERA5 reanalysis instead of the instruments, GFS and ECMWF swap places for temperature, and ERA5 itself is further from the thermometers than a free climatology. One matching choice moves a score more than switching models does, and two of the first results were faults in the forecast archive.
 
 If a weather model is meant to learn from observations, it should be judged on them too. This repository is a small, working version of that judge.
 

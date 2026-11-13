@@ -99,10 +99,19 @@ def main() -> None:
     rex = [{"ref": r.reference, "q": float(r.q), "f": r4(r.forecast_q), "o": r4(r.observed_q), "r": r4(r.rqe),
             "lo": r4(r.low), "hi": r4(r.high)} for r in rx.itertuples()]
 
+    # Stations with at least one scored hour in the test period, one day ahead, any variable.
+    from tropics_scorecard.paths import load_config
+    from tropics_scorecard.scorer import core
+
+    cfg = load_config()
+    scored = set()
+    for v in ("rain_hourly", "temperature_2m", "wind_speed_10m"):
+        scored |= set(core.cases_for(cfg, v, "day", 1)["station_key"].unique())
+
     data = {"lead": lead, "versus": versus, "by_hour": by_hour, "cell_rule": cell_rule, "amount": amount,
             "map": {"view": VIEW, "rings": bm["rings"], "stations": stations, "cells": cells}, "cases": cases,
             "counts": counts, "skill": skill, "ext": ext, "heavy": heavy, "dec": dec, "rea": rea, "reb": reb,
-            "rex": rex}
+            "rex": rex, "scored": len(scored)}
     template = (ROOT / "scripts" / "story_template.html").read_text(encoding="utf-8")
     out = template.replace("/*DATA*/null", json.dumps(data, separators=(",", ":")))
     (ROOT / "dashboard" / "story.html").write_text(out, encoding="utf-8")
