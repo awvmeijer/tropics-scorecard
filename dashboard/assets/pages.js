@@ -1,7 +1,7 @@
 import {
   MAIN, METRICS, REGIMES, REGIME_SHORT, SCORED, SOURCES, VARIABLES, VIEWS, el, fmt, fmtInt, heatmap, legend, limitsPanel, lineChart, load,
   pick, rowsOf, stationMap, statusPanel, table,
-} from "./app.js?v=17";
+} from "./app.js?v=18";
 
 const page = document.body.dataset.page;
 const $ = (id) => document.getElementById(id);
@@ -330,7 +330,7 @@ async function casesPage() {
 
 // ------------------------------------------------------------------ boot
 
-// Light by default; the switch in the header sets data-theme on the root and is remembered.
+// Dark by default; the switch in the header sets data-theme on the root and is remembered.
 (function themeSwitch() {
   const root = document.documentElement, bar = document.querySelector("header.site .wrap");
   if (!bar) return;
@@ -338,7 +338,7 @@ async function casesPage() {
   const set = (t) => { root.setAttribute("data-theme", t); btn.textContent = t === "dark" ? "Light mode" : "Dark mode"; btn.setAttribute("aria-pressed", String(t === "dark")); };
   let saved = null;
   try { saved = localStorage.getItem("tropics-theme"); } catch (e) { saved = null; }
-  set(saved === "dark" || saved === "light" ? saved : "light");
+  set(saved === "dark" || saved === "light" ? saved : "dark");
   btn.addEventListener("click", () => { const t = root.getAttribute("data-theme") === "dark" ? "light" : "dark"; set(t); try { localStorage.setItem("tropics-theme", t); } catch (e) { /* not saved */ } });
   bar.append(btn);
 })();

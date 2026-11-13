@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
 /* Layout: one column of findings. Each finding is a claim in large type, the
-   number that carries it, and its evidence in a rounded card. Light by default, with a switch to
+   number that carries it, and its evidence in a rounded card. Dark by default, with a switch to
    the dark version. Neutral greys, blue as the only accent. */
 :root {
   --paper: #ffffff; --card: #ffffff; --edge: #d9d9d9; --ink: #0a0a0a; --ink-2: #5e5e5e; --ink-3: #8f8f8f; --rule: #ececec; --wash: #f6f6f6;
@@ -332,11 +332,11 @@ function all() {
     lines(fig, ser, c.t, { names: false, h: 230, xw: 86, xf: (t) => t.slice(8, 10) + "/" + t.slice(5, 7), xl: (t) => t.slice(5).replace("-", "/"), yf: (v) => f(v, 1), label: c.title });
   }
 }
-// Light by default. The switch sets data-theme on the root; the choice is remembered.
+// Dark by default. The switch sets data-theme on the root; the choice is remembered.
 const root = document.documentElement, themeBtn = $("theme");
 function setTheme(t) { root.setAttribute("data-theme", t); themeBtn.textContent = t === "dark" ? "Light mode" : "Dark mode"; themeBtn.setAttribute("aria-pressed", String(t === "dark")); }
 let saved = null; try { saved = localStorage.getItem("tropics-theme"); } catch (e) { saved = null; }
-setTheme(saved === "dark" || saved === "light" ? saved : "light");
+setTheme(saved === "dark" || saved === "light" ? saved : "dark");
 themeBtn.addEventListener("click", () => { const t = root.getAttribute("data-theme") === "dark" ? "light" : "dark"; setTheme(t); try { localStorage.setItem("tropics-theme", t); } catch (e) { /* not saved */ } });
 all();
 let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(all, 200); });
