@@ -71,11 +71,15 @@ def build(cfg: dict) -> None:
 
 def score(cfg: dict) -> None:
     from . import export
-    from .scorer import core
+    from .scorer import core, summary
 
     t = _step("scoring")
     df = core.run_all(cfg)
     print(f"   {core.summary_numbers(df)}", flush=True)
+    _done(t)
+
+    t = _step("scorecard and extremes tables")
+    summary.main(cfg)
     _done(t)
     export.main([])
 

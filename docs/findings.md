@@ -40,6 +40,24 @@ The second fault runs the other way. ECMWF's public rain comes in 3-hour and 6-h
 
 Both were found by asking why a number looked the way it did before believing it.
 
+## 6. Across every lead time, the picture does not change
+
+Published scorecards for learned weather models show every variable at every lead time as a grid: blue where the model beats the reference, red where it is worse. I built the same grid with two changes: the truth is the instruments, and the reference is climatology. Each cell is the change in error as a percentage of climatology's error on the same cases.
+
+Rain is blue in 33 of 36 cells. Temperature and wind are blue in none of 40. So the one-day-ahead result in sections 1 to 3 is not a quirk of one lead time. The cell closest to blue for temperature belongs to ECMWF's AIFS, a learned model: no worse than climatology over the first three days, then worse by 6 to 8 percent at days 5 and 7, on its shorter period.
+
+## 7. The heaviest rain is about a third of what fell
+
+The FourCastNet paper tests extremes by comparing a model's heaviest values with the heaviest observed: the relative quantile error. Against reanalysis, its authors found ECMWF's heaviest rain about 15 percent too light. I ran the same test on 6-hour totals against the gauges.
+
+One day ahead, the heaviest 0.1 percent of 6-hour totals at single gauges is 76 mm. ECMWF's grid cell gives 22 mm. A point is not a cell, so I also averaged the gauges inside each cell, using only cell-times with at least five gauges. That brings the measured figure down to 68 mm, not to 22. ECMWF's heaviest totals are 68 percent too light (62 to 71). Its two other models are much the same: AIFS 63 percent (59 to 81), IFS 9 km 72 percent (60 to 80).
+
+GFS is different at the very top. Its heaviest 0.1 percent is not detectably lighter than the gauges' (minus 49 to plus 83 percent). It does produce totals that heavy. It just rarely puts them in the right hour and place: it caught 1.6 percent of the hours with 10 mm or more. At the heaviest 1 percent, every model is too light, GFS included, by 51 to 68 percent.
+
+So the point-against-cell mismatch explains only a small part of the gap for heavy rain. Most of it is the models.
+
+I added sections 6 and 7 after the main scoring, and the protocol log says so. Both follow published methods. The two percentiles and the five-gauge minimum were picked during a first look at the numbers, so treat them as a check rather than a test fixed in advance.
+
 ## What the case studies add
 
 - **A record monsoon surge, March 2025.** Both models warned of it days ahead. The amount was another matter: 268 mm fell, GFS said 207, ECMWF said 121.

@@ -100,6 +100,16 @@ exclusions:
   - {source: gfs_global, variable: rain_hourly, lead_kind: hour, leads: [121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168],
      reason: "same fault, seen in whole runs beyond hour 120"}
 
+# Added 2026-11-14, after the main scoring, from published conventions (protocol change log).
+# Skill: each model's change in mean absolute error against climatology, as a percentage of
+# climatology's error on the same cases, at every lead day. Extremes: the relative quantile
+# error of 6-hour rain totals, against each gauge and against the gauges averaged over the
+# model's own grid cell (only cell-times with at least cell_mean_min_gauges gauges).
+summary_scores:
+  skill_variables: [rain_hourly, rain_6h, temperature_2m, wind_speed_10m]
+  extremes_quantiles: [0.99, 0.999]
+  cell_mean_min_gauges: 5
+
 # Page counts on the hosted site only (GitHub Pages). GoatCounter: no cookies, no personal data.
 # Empty code = no counter. The counter is added to docs/, never to the local dashboard.
 analytics:

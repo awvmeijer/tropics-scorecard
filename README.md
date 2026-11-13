@@ -5,10 +5,10 @@ How close was the forecast to what the instruments measured, and how sure are we
 This repository scores hourly rain, temperature and wind forecasts for Singapore against station observations, not against a reanalysis. Every comparison carries a 95 percent interval.
 
 [![Summary page](https://img.shields.io/badge/summary-live%20page-1e9bff?style=flat-square)](https://awvmeijer.github.io/tropics-scorecard/)
-[![Tests](https://img.shields.io/badge/tests-82%20passing-1e9bff?style=flat-square)](tests)
-[![Findings](https://img.shields.io/badge/findings-5-262626?style=flat-square)](docs/findings.md)
+[![Tests](https://img.shields.io/badge/tests-90%20passing-1e9bff?style=flat-square)](tests)
+[![Findings](https://img.shields.io/badge/findings-7-262626?style=flat-square)](docs/findings.md)
 
-**[Read the one-page summary](https://awvmeijer.github.io/tropics-scorecard/)**: five findings and three replayed events, each with its chart.
+**[Read the one-page summary](https://awvmeijer.github.io/tropics-scorecard/)**: a scorecard across lead days, an extremes test, three replayed events, and what the checks caught.
 
 <p align="center">
   <picture>
@@ -28,8 +28,8 @@ This repository scores hourly rain, temperature and wind forecasts for Singapore
   </picture>
 </p>
 
-- **At the surface in the tropics, operational forecasts barely beat a free guess.** No model is detectably better than climatology for temperature or wind at a station. For rain, ECMWF gains about 12 percent.
-- **The events that matter most are where they miss.** A squall line put 10 mm in an hour on half of Singapore's gauges, and no forecast had it at any lead time.
+- **At the surface in the tropics, operational forecasts barely beat a free guess.** No model is detectably better than climatology for temperature or wind at a station, at any lead time. For rain, ECMWF gains about 12 percent.
+- **The events that matter most are where they miss.** ECMWF's heaviest 6-hour rain totals are a third of what the gauges measured, even with the gauges averaged over the model's own grid cell. A squall line put 10 mm in an hour on half of Singapore's gauges, and no forecast had it at any lead time.
 - **The judge needs as much care as the model.** One matching choice moves a score as much as switching models, and two of the first "wins" were faults in the forecast archive.
 
 If a weather model is meant to learn from observations, it should be judged on them too. This repository is a small, working version of that judge.
@@ -52,6 +52,7 @@ The full write-up is in [docs/findings.md](docs/findings.md), the case studies i
 | Forecasts | GFS and ECMWF IFS 0.25° at lead days 1, 2, 3, 5 and 7 (Open-Meteo Previous Runs); whole runs from April 2026 for hour-by-hour lead times. ECMWF AIFS and IFS 9 km on their shorter archives, scored apart |
 | Baselines | Persistence and climatology, exposed exactly like a model |
 | Intervals | Moving-block bootstrap over days, on paired differences between two forecasts on the same cases |
+| Summary tables | A scorecard of the change in error against climatology at every lead day, and an extremes test comparing the heaviest 6-hour rain totals with the gauges, alone and averaged over each grid cell |
 
 The rules are written down before any scoring in [docs/verification_protocol.md](docs/verification_protocol.md), with a dated change log. How each observation source fails, and which check catches it, is in [docs/observation_notes/](docs/observation_notes/).
 

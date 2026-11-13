@@ -29,6 +29,17 @@ def mae(forecast, observed):
     return sum(abs(x) for x in e) / len(e)
 
 
+def percent_change(difference, reference):
+    """100 * difference / reference: a change in a score as a percentage of the reference
+    forecast's score on the same cases. Negative means lower error than the reference.
+
+    ValueError when reference is zero.
+    """
+    if reference == 0:
+        raise ValueError("reference is zero")
+    return 100 * difference / reference
+
+
 def rmse(forecast, observed):
     """Square root of the mean of (forecast - observed) squared over valid pairs."""
     e = _errors(forecast, observed)

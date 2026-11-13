@@ -73,9 +73,21 @@ def main() -> None:
 
     n = flat[(flat.metric == "mae") & (flat.lead == 1) & flat.against.isna() & (flat.source == "ecmwf_ifs025")]
     counts = {r.variable: int(r.n_pairs) for r in n.itertuples()}
+
+    # The scorecard and the extremes test (scorer.summary).
+    sk = pd.read_parquet(TABLES / "results" / "skill.parquet")
+    skill = [{"s": r.source, "v": r.variable, "l": int(r.lead), "p": r4(r.percent), "lo": r4(r.low), "hi": r4(r.high),
+              "d": int(r.n_days)} for r in sk.itertuples()]
+    ex = pd.read_parquet(TABLES / "results" / "extremes.parquet")
+    ext = [{"s": r.source, "ref": r.reference, "q": float(r.q), "f": r4(r.forecast_q), "o": r4(r.observed_q),
+            "r": r4(r.rqe), "lo": r4(r.low), "hi": r4(r.high)} for r in ex[ex.lead == 1].itertuples()]
+    pod = flat[(flat.metric == "pod") & (flat.threshold == 10.0) & (flat.lead == 1) & flat.against.isna()
+               & (flat.source == "gfs_global")]
+    heavy = {"gfs_pod10": r4(pod.value.iloc[0])}
+
     data = {"lead": lead, "versus": versus, "by_hour": by_hour, "cell_rule": cell_rule, "amount": amount,
             "map": {"view": VIEW, "rings": bm["rings"], "stations": stations, "cells": cells}, "cases": cases,
-            "counts": counts}
+            "counts": counts, "skill": skill, "ext": ext, "heavy": heavy}
     template = (ROOT / "scripts" / "story_template.html").read_text(encoding="utf-8")
     out = template.replace("/*DATA*/null", json.dumps(data, separators=(",", ":")))
     (ROOT / "dashboard" / "story.html").write_text(out, encoding="utf-8")
