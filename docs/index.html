@@ -3,22 +3,30 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
-/* Layout: one column of findings, each a claim in large type, the evidence as a chart
-   beside or under it, and the number that carries it in mono. One look, light, by choice:
-   charcoal on white, colour only on data. */
+/* Layout: one column of findings on a near-black ground with a blue glow. Each finding is
+   a claim in large type, the number that carries it, and its evidence in a dark card.
+   Dark first; a light version follows the viewer's theme. Blue is the only accent. */
 :root {
-  --paper: #ffffff; --ink: #262626; --ink-2: #555555; --ink-3: #767676; --rule: #e4e4e4; --wash: #f6f6f4;
-  --land: #f0f0ed; --coast: #cfcfcb;
-  --gfs: #2a78d6; --ifs: #eb6834; --pers: #1baf7a; --clim: #b07a00; --obs: #262626;
+  --paper: #030303; --card: #101010; --edge: #2c2c2c; --ink: #ffffff; --ink-2: #a3a3a3; --ink-3: #6e6e6e; --rule: #232323; --wash: #101010;
+  --land: #161616; --coast: #333333; --accent: #1e9bff; --glow: rgba(0,105,190,.24); --glow-2: rgba(0,80,150,.07);
+  --gfs: #3987e5; --ifs: #d95926; --pers: #199e70; --clim: #c98500; --obs: #ffffff;
   --sans: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  color-scheme: light;
+  color-scheme: dark;
 }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --paper: #ffffff; --card: #ffffff; --edge: #d9d9d9; --ink: #0a0a0a; --ink-2: #5e5e5e; --ink-3: #8f8f8f; --rule: #ececec; --wash: #f6f6f6;
+  --land: #f1f1f1; --coast: #cfcfcf; --accent: #0a78d6; --glow: rgba(0,120,215,.10); --glow-2: rgba(0,120,215,.03);
+  --gfs: #2a78d6; --ifs: #eb6834; --pers: #1baf7a; --clim: #b07a00; --obs: #0a0a0a; color-scheme: light; } }
+:root[data-theme="light"] {
+  --paper: #ffffff; --card: #ffffff; --edge: #d9d9d9; --ink: #0a0a0a; --ink-2: #5e5e5e; --ink-3: #8f8f8f; --rule: #ececec; --wash: #f6f6f6;
+  --land: #f1f1f1; --coast: #cfcfcf; --accent: #0a78d6; --glow: rgba(0,120,215,.10); --glow-2: rgba(0,120,215,.03);
+  --gfs: #2a78d6; --ifs: #eb6834; --pers: #1baf7a; --clim: #b07a00; --obs: #0a0a0a; color-scheme: light; }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.55 var(--sans); }
+body { margin: 0; background: var(--paper) radial-gradient(ellipse 90% 700px at 50% 0, var(--glow), var(--glow-2) 45%, transparent 100%) no-repeat; color: var(--ink); font: 17px/1.55 var(--sans); }
 .wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 a { color: var(--ink); text-underline-offset: 3px; }
-.label { font: 500 11px/1.4 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); }
+.label { font: 500 11px/1.4 var(--sans); letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-2); }
 h1 { font-size: clamp(34px, 6.4vw, 68px); line-height: 1.04; letter-spacing: -0.03em; font-weight: 600; margin: 14px 0 20px; text-wrap: balance; max-width: 15ch; }
 h2 { font-size: clamp(25px, 3.6vw, 38px); line-height: 1.12; letter-spacing: -0.02em; font-weight: 600; margin: 8px 0 14px; text-wrap: balance; }
 h3 { font-size: 18px; margin: 0 0 6px; font-weight: 600; }
@@ -27,35 +35,35 @@ p { margin: 0 0 14px; max-width: 62ch; }
 header.top { padding-block: 44px 28px; }
 .hero { display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr); align-items: end; }
 @media (min-width: 860px) { .hero { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); } }
-.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0; border-top: 1px solid var(--ink); margin-top: 28px; }
-.facts div { padding: 12px 12px 12px 0; border-bottom: 1px solid var(--rule); }
-.facts b { display: block; font: 600 22px/1.2 var(--mono); font-variant-numeric: tabular-nums; }
-section.finding { border-top: 1px solid var(--ink); padding-block: 36px 40px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-top: 28px; }
+.facts div { padding: 14px 16px; border: 1px solid var(--edge); border-radius: 14px; background: var(--card); }
+.facts b { display: block; font: 500 22px/1.3 var(--sans); font-variant-numeric: tabular-nums; margin-bottom: 4px; }
+section.finding { border-top: 1px solid var(--rule); padding-block: 40px 44px; }
 .split { display: grid; gap: 24px 40px; grid-template-columns: minmax(0, 1fr); align-items: start; }
 @media (min-width: 860px) { .split { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); } }
 .split > * { min-width: 0; }
-.num { font: 600 clamp(30px, 4.4vw, 46px)/1.05 var(--mono); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; margin: 4px 0 2px; }
-.num small { font: 400 13px/1.4 var(--mono); color: var(--ink-2); letter-spacing: 0; display: block; margin-top: 6px; }
-.fig { border: 1px solid var(--rule); border-radius: 6px; padding: 14px; position: relative; }
+.num { color: var(--accent); font: 600 clamp(30px, 4.4vw, 46px)/1.05 var(--mono); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; margin: 4px 0 2px; }
+.num small { font: 400 13px/1.4 var(--sans); color: var(--ink-2); letter-spacing: 0; display: block; margin-top: 6px; }
+.fig { border: 1px solid var(--edge); border-radius: 14px; padding: 14px; position: relative; background: var(--card); }
 .fig svg { display: block; width: 100%; height: auto; overflow: visible; }
-.fig text { font: 11px var(--mono); fill: var(--ink-2); }
+.fig text { font: 11px var(--sans); fill: var(--ink-2); }
 .fig text.name { font: 500 12px var(--sans); fill: var(--ink); }
 .cap { font-size: 13.5px; color: var(--ink-2); margin: 10px 0 0; max-width: none; }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; margin: 6px 0 8px; }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .legend i { width: 20px; height: 0; border-top: 2.5px solid; display: inline-block; }
 .legend i.dash { border-top-style: dashed; }
-.tabs { display: inline-flex; border: 1px solid var(--ink); border-radius: 5px; overflow: hidden; margin: 0 0 10px; }
-.tabs button { font: 500 13px var(--sans); color: var(--ink); background: var(--paper); border: 0; padding: 7px 12px; cursor: pointer; min-height: 34px; }
-.tabs button + button { border-left: 1px solid var(--ink); }
-.tabs button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
-:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-.tip { position: absolute; pointer-events: none; background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; padding: 7px 9px; font-size: 12.5px; line-height: 1.4; box-shadow: 0 4px 16px rgba(0,0,0,0.08); min-width: 150px; z-index: 3; }
+.tabs { display: inline-flex; border: 1px solid var(--edge); border-radius: 10px; overflow: hidden; margin: 0 0 10px; }
+.tabs button { font: 500 13px var(--sans); color: var(--ink-2); background: var(--card); border: 0; padding: 7px 12px; cursor: pointer; min-height: 34px; }
+.tabs button + button { border-left: 1px solid var(--edge); }
+.tabs button[aria-pressed="true"] { color: var(--ink); box-shadow: inset 0 0 0 1.4px var(--accent); border-radius: 9px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tip { position: absolute; pointer-events: none; background: var(--card); border: 1px solid var(--edge); border-radius: 10px; padding: 7px 9px; font-size: 12.5px; line-height: 1.4; box-shadow: 0 6px 20px rgba(0,0,0,0.35); min-width: 150px; z-index: 3; }
 .tip b { font-family: var(--mono); }
 .tip .h { font: 500 11px var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); }
 .cases { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
 .cases > div { min-width: 0; }
-.limits { background: var(--wash); border-radius: 6px; padding: 20px; margin-block: 8px 40px; }
+.limits { background: var(--card); border: 1px solid var(--edge); border-radius: 14px; padding: 20px; margin-block: 8px 40px; }
 .limits ul { margin: 8px 0 0; padding-left: 18px; }
 .limits li { margin: 5px 0; max-width: 70ch; }
 footer { border-top: 1px solid var(--rule); color: var(--ink-2); font-size: 13px; padding-block: 18px 30px; }
@@ -79,7 +87,7 @@ footer p { max-width: none; }
   <section class="finding">
     <div class="split">
       <div>
-        <span class="label">Finding 1 · Rain</span>
+        <span class="label">01 · Rain</span>
         <h2>The best forecast beats the free baselines, but only just.</h2>
         <div class="num" id="n1"></div>
         <p>ECMWF's forecast is closer to the gauges than "what usually happens at this hour, in this month" at every lead time out to seven days. GFS, one day ahead, is not detectably better than assuming tomorrow repeats today.</p>
@@ -97,7 +105,7 @@ footer p { max-width: none; }
   <section class="finding">
     <div class="split">
       <div>
-        <span class="label">Finding 2 · Temperature</span>
+        <span class="label">02 · Temperature</span>
         <h2>No model beats climatology at a weather station.</h2>
         <div class="num" id="n2"></div>
         <p>Both models run cool. ECMWF is at its worst between 9 in the morning and 3 in the afternoon. On its grid, the cell that holds most of Singapore is mostly sea, and sea does not heat up during the day the way a city does.</p>
@@ -113,7 +121,7 @@ footer p { max-width: none; }
   <section class="finding">
     <div class="split">
       <div>
-        <span class="label">Finding 3 · Wind</span>
+        <span class="label">03 · Wind</span>
         <h2>Wind at a station is forecast worse than a guess from history.</h2>
         <div class="num" id="n3"></div>
         <p>Every model is further from the measured wind than climatology, and every model reads too windy. A grid cell 13 to 28 km wide, part of it open water, is being compared with a mast between buildings. They are not measuring the same thing, and anyone who needs the wind at that mast should know it.</p>
@@ -128,7 +136,7 @@ footer p { max-width: none; }
   <section class="finding">
     <div class="split">
       <div>
-        <span class="label">Finding 4 · Matching</span>
+        <span class="label">04 · Matching</span>
         <h2>Which grid cell you pick matters as much as which model you pick.</h2>
         <div class="num" id="n4"></div>
         <p>A station has to be paired with one cell of the model's grid. Take the cell it sits in, or the nearest cell the model treats as land? For ECMWF the land rule moves 53 of Singapore's 54 southern stations to a cell centred in Johor.</p>
@@ -145,7 +153,7 @@ footer p { max-width: none; }
   <section class="finding">
     <div class="split">
       <div>
-        <span class="label">Finding 5 · Checking the data</span>
+        <span class="label">05 · Checking the data</span>
         <h2>Two of my first results were faults in the archive, not skill.</h2>
         <div class="num" id="n5"></div>
         <p>On the first run, GFS rain looked better seven days ahead than one day ahead. That cannot be right, so I looked. Beyond 120 hours the archived GFS rain is a third of its day-one amount. Forecasting a third of the rain lowers the error. I removed those lead times and wrote down why, even though it deleted a result that looked good.</p>
@@ -160,9 +168,9 @@ footer p { max-width: none; }
   </section>
 
   <section class="finding">
-    <span class="label">Three events, replayed</span>
+    <span class="label">06 · Three events, replayed</span>
     <h2>Where the forecasts held, and where they did not.</h2>
-    <p>Chosen from the gauge data and public reports before any forecast was looked at. Black is what the gauges measured, as a network mean per hour. Colour is what each model said one day ahead.</p>
+    <p>Chosen from the gauge data and public reports before any forecast was looked at. White or black is what the gauges measured, as a network mean per hour. Colour is what each model said one day ahead.</p>
     <div class="legend" id="lg6"></div>
     <div class="cases" id="cases"></div>
   </section>
@@ -215,7 +223,7 @@ function lines(host, series, xs, o = {}) {
     if (!pts.length) continue;
     const path = sv("path", { d: pts.map((p, i) => `${i ? "L" : "M"}${X(p.x).toFixed(1)},${Y(p.y).toFixed(1)}`).join(""), fill: "none", stroke: col, "stroke-width": s.id === "obs" ? 1.6 : 2, "stroke-dasharray": dash ? "6 4" : null, "stroke-linejoin": "round" }, svg);
     if (!dash && o.draw) { path.style.setProperty("--len", path.getTotalLength()); path.classList.add("draw"); }
-    if (pts.length <= 8) for (const p of pts) sv("circle", { cx: X(p.x), cy: Y(p.y), r: 3.5, fill: col, stroke: "var(--paper)", "stroke-width": 1.5 }, svg);
+    if (pts.length <= 8) for (const p of pts) sv("circle", { cx: X(p.x), cy: Y(p.y), r: 3.5, fill: col, stroke: "var(--card)", "stroke-width": 1.5 }, svg);
     ends.push({ name, y: Y(pts[pts.length - 1].y), x: X(pts[pts.length - 1].x) });
   }
   if (o.names !== false) { ends.sort((a, b) => a.y - b.y); for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 14) ends[i].y = ends[i - 1].y + 14; for (const e of ends) sv("text", { x: e.x + 9, y: e.y + 4, class: "name" }, svg).textContent = e.name; }
@@ -250,7 +258,7 @@ function forest(host, groups) {
     const cy = y + rh / 2, col = (SRC[r.s] || ["", "var(--ink-2)"])[1];
     sv("text", { x: m.l - 10, y: cy + 4, "text-anchor": "end", class: "name" }, svg).textContent = (SRC[r.s] || [r.s])[0];
     sv("line", { x1: X(r.lo), x2: X(r.hi), y1: cy, y2: cy, stroke: col, "stroke-width": 3, "stroke-linecap": "round" }, svg);
-    sv("circle", { cx: X(r.y), cy, r: 5, fill: col, stroke: "var(--paper)", "stroke-width": 2 }, svg);
+    sv("circle", { cx: X(r.y), cy, r: 5, fill: col, stroke: "var(--card)", "stroke-width": 2 }, svg);
     const t = sv("title", {}, svg.lastChild); t.textContent = `${f(r.y, 3)} (${f(r.lo, 3)} to ${f(r.hi, 3)})`;
     y += rh;
   }
@@ -263,14 +271,14 @@ function map(host, rule, small) {
   const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Stations and the forecast grid cells they are paired with" }, host);
   const id = "cl" + Math.random().toString(36).slice(2); sv("rect", { width: W, height: H }, sv("clipPath", { id }, sv("defs", {}, svg)));
   const g = sv("g", { "clip-path": `url(#${id})` }, svg);
-  sv("rect", { width: W, height: H, fill: "var(--paper)" }, g);
+  sv("rect", { width: W, height: H, fill: "var(--card)" }, g);
   for (const r of M.rings) sv("path", { d: r.map(([x, y], i) => `${i ? "L" : "M"}${X(x).toFixed(1)},${Y(y).toFixed(1)}`).join("") + "Z", fill: "var(--land)", stroke: "var(--coast)", "stroke-width": 0.8 }, g);
   const cells = M.cells[rule], used = new Map();
   for (const s of M.stations) { const c = cells[s.k]; if (c) used.set(c.join(), c); }
   for (const [, [la, lo]] of used) { sv("rect", { x: X(lo - 0.125), y: Y(la + 0.125), width: X(lo + 0.125) - X(lo - 0.125), height: Y(la - 0.125) - Y(la + 0.125), fill: "none", stroke: "var(--ink-3)", "stroke-dasharray": "4 3" }, g); }
-  if (!small) for (const s of M.stations) { const c = cells[s.k]; if (c) sv("line", { x1: X(s.lon), y1: Y(s.lat), x2: X(c[1]), y2: Y(c[0]), stroke: "var(--ifs)", "stroke-width": 0.8, opacity: 0.75 }, g); }
-  if (!small) for (const [, [la, lo]] of used) sv("circle", { cx: X(lo), cy: Y(la), r: 4.5, fill: "var(--ifs)", stroke: "var(--paper)", "stroke-width": 1.5 }, g);
-  for (const s of M.stations) { if (s.isd) sv("rect", { x: X(s.lon) - 4, y: Y(s.lat) - 4, width: 8, height: 8, fill: "var(--ink)", stroke: "var(--paper)", "stroke-width": 1.2 }, g); else sv("circle", { cx: X(s.lon), cy: Y(s.lat), r: 3.6, fill: "var(--ink)", stroke: "var(--paper)", "stroke-width": 1.2 }, g); }
+  if (!small) for (const s of M.stations) { const c = cells[s.k]; if (c) sv("line", { x1: X(s.lon), y1: Y(s.lat), x2: X(c[1]), y2: Y(c[0]), stroke: "var(--accent)", "stroke-width": 0.8, opacity: 0.7 }, g); }
+  if (!small) for (const [, [la, lo]] of used) sv("circle", { cx: X(lo), cy: Y(la), r: 4.5, fill: "var(--accent)", stroke: "var(--card)", "stroke-width": 1.5 }, g);
+  for (const s of M.stations) { if (s.isd) sv("rect", { x: X(s.lon) - 4, y: Y(s.lat) - 4, width: 8, height: 8, fill: "var(--ink)", stroke: "var(--card)", "stroke-width": 1.2 }, g); else sv("circle", { cx: X(s.lon), cy: Y(s.lat), r: 3.6, fill: "var(--ink)", stroke: "var(--card)", "stroke-width": 1.2 }, g); }
   sv("rect", { x: 0.5, y: 0.5, width: W - 1, height: H - 1, fill: "none", stroke: "var(--rule)" }, svg);
 }
 
@@ -305,7 +313,7 @@ function all() {
   // 4
   const cr = D.cell_rule; $("n4").append(document.createTextNode(`${f(cr.temperature_2m.y)} °C`)); { const sm = document.createElement("small"); sm.textContent = `worse for temperature under the land rule (${f(cr.temperature_2m.lo)} to ${f(cr.temperature_2m.hi)}); wind ${f(-cr.wind_speed_10m.y)} m/s better`; $("n4").append(sm); }
   const draw4 = (rule) => { map($("c4"), rule); $("m-n").setAttribute("aria-pressed", rule === "nearest"); $("m-l").setAttribute("aria-pressed", rule === "land");
-    $("cap4").textContent = rule === "nearest" ? "Each station (black) joined to the centre of the ECMWF 0.25° cell it sits in (orange). Dashed squares are the cells. Most of the island falls in one cell centred over the southern coast." : "Under the land rule, almost every station is joined to a cell centred in Johor, across the strait. Same stations, same model, different forecast."; };
+    $("cap4").textContent = rule === "nearest" ? "Each station (dot) joined to the centre of the ECMWF 0.25° cell it sits in (blue). Dashed squares are the cells. Most of the island falls in one cell centred over the southern coast." : "Under the land rule, almost every station is joined to a cell centred in Johor, across the strait. Same stations, same model, different forecast."; };
   $("m-n").onclick = () => draw4("nearest"); $("m-l").onclick = () => draw4("land"); draw4("nearest");
   // 5
   legend($("lg5"), ["gfs_global", "ecmwf_ifs025"]);

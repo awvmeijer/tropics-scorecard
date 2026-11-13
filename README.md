@@ -4,13 +4,29 @@ How close was the forecast to what the instruments measured, and how sure are we
 
 This repository scores hourly rain, temperature and wind forecasts for Singapore against station observations, not against a reanalysis. Every comparison carries a 95 percent interval.
 
+[![Summary page](https://img.shields.io/badge/summary-live%20page-1e9bff?style=flat-square)](https://awvmeijer.github.io/tropics-scorecard/)
+[![Tests](https://img.shields.io/badge/tests-82%20passing-1e9bff?style=flat-square)](tests)
+[![Findings](https://img.shields.io/badge/findings-5-262626?style=flat-square)](docs/findings.md)
+
 **[Read the one-page summary](https://awvmeijer.github.io/tropics-scorecard/)**: five findings and three replayed events, each with its chart.
 
-![How it works: instruments and the forecast archive are matched, scored against baselines, and reported with intervals](docs/assets/pipeline.svg)
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/pipeline-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/pipeline-light.svg">
+    <img alt="Tropics Scorecard pipeline: station observations and archived forecasts are matched on the same cases, scored against two baselines through one scorer, and reported with intervals." src="docs/assets/pipeline-light.svg" width="100%">
+  </picture>
+</p>
 
 ## What it found
 
-![Difference in error against climatology, one day ahead, with 95 percent intervals](docs/assets/result.svg)
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/result-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/result-light.svg">
+    <img alt="Difference in mean absolute error against climatology, one day ahead, with 95 percent intervals. Rain forecasts are slightly better than climatology; temperature and wind forecasts are worse." src="docs/assets/result-light.svg" width="100%">
+  </picture>
+</p>
 
 - **Rain:** the best forecast beats the free baselines, but only by about 12 percent.
 - **Temperature:** no model beats climatology at a weather station. Both main models run cool.
