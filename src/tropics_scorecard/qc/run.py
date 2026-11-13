@@ -125,7 +125,7 @@ def main(argv=None) -> int:
         r = run_datagovsg(cfg, args.variable, args.year)
         print(r["summary"].to_string(index=False))
         if r["blocked"]:
-            print(f"BLOCKED: stuck_dry check skipped, needs a hand-written metric: {r['blocked']}")
+            print(f"BLOCKED: stuck_dry check skipped, needs a metric function: {r['blocked']}")
     return 0
 
 

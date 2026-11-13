@@ -8,7 +8,14 @@ def rolling_mean(values, window):
     ValueError when window < 1 or window > len(values).
     Aim for one pass, not a fresh sum per window.
     """
-    raise NotImplementedError("write me by hand: metrics.timeseries.rolling_mean")
+    if window < 1 or window > len(values):
+        raise ValueError("window must be between 1 and len(values)")
+    total = sum(values[:window])
+    out = [total / window]
+    for i in range(window, len(values)):
+        total += values[i] - values[i - window]
+        out.append(total / window)
+    return out
 
 
 def resample_mean(times, values, step, start):
@@ -21,4 +28,18 @@ def resample_mean(times, values, step, start):
     Readings before `start` are ignored. Empty input returns [].
     ValueError when step <= 0 or the lengths differ.
     """
-    raise NotImplementedError("write me by hand: metrics.timeseries.resample_mean")
+    if step <= 0:
+        raise ValueError("step must be positive")
+    if len(times) != len(values):
+        raise ValueError("times and values differ in length")
+    sums = {}
+    for t, v in zip(times, values):
+        if t < start:
+            continue
+        k = int((t - start) // step)
+        s = sums.setdefault(k, [0.0, 0])
+        s[0] += v
+        s[1] += 1
+    if not sums:
+        return []
+    return [(start + k * step, sums[k][0] / sums[k][1] if k in sums else None) for k in range(max(sums) + 1)]

@@ -5,21 +5,34 @@ Conventions for every function here:
 - a pair is skipped when either value is None
 - ValueError when the inputs differ in length, or no valid pair remains
 """
+import math
+
+
+def _errors(forecast, observed):
+    if len(forecast) != len(observed):
+        raise ValueError("forecast and observed differ in length")
+    out = [f - o for f, o in zip(forecast, observed) if f is not None and o is not None]
+    if not out:
+        raise ValueError("no valid pair")
+    return out
 
 
 def bias(forecast, observed):
     """Mean of (forecast - observed) over valid pairs."""
-    raise NotImplementedError("write me by hand: metrics.errors.bias")
+    e = _errors(forecast, observed)
+    return sum(e) / len(e)
 
 
 def mae(forecast, observed):
     """Mean of |forecast - observed| over valid pairs."""
-    raise NotImplementedError("write me by hand: metrics.errors.mae")
+    e = _errors(forecast, observed)
+    return sum(abs(x) for x in e) / len(e)
 
 
 def rmse(forecast, observed):
     """Square root of the mean of (forecast - observed) squared over valid pairs."""
-    raise NotImplementedError("write me by hand: metrics.errors.rmse")
+    e = _errors(forecast, observed)
+    return math.sqrt(sum(x * x for x in e) / len(e))
 
 
 def rmse_by_lead_time(records):
@@ -29,4 +42,11 @@ def rmse_by_lead_time(records):
     Pairs with a None are skipped. A lead time with no valid pair is left out.
     The result is ordered by lead time, ascending.
     """
-    raise NotImplementedError("write me by hand: metrics.errors.rmse_by_lead_time")
+    groups = {}
+    for lead, f, o in records:
+        if f is None or o is None:
+            continue
+        groups.setdefault(lead, ([], []))
+        groups[lead][0].append(f)
+        groups[lead][1].append(o)
+    return {lead: rmse(*groups[lead]) for lead in sorted(groups)}

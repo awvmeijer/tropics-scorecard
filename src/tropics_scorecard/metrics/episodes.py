@@ -9,4 +9,12 @@ def merge_intervals(intervals, max_gap=0):
     Returns a list of (start, end) tuples sorted by start. The input is not
     modified. ValueError when an interval has start > end.
     """
-    raise NotImplementedError("write me by hand: metrics.episodes.merge_intervals")
+    out = []
+    for start, end in sorted(intervals):
+        if start > end:
+            raise ValueError(f"interval ({start}, {end}) has start after end")
+        if out and start <= out[-1][1] + max_gap:
+            out[-1] = (out[-1][0], max(out[-1][1], end))
+        else:
+            out.append((start, end))
+    return out

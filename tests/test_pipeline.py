@@ -1,6 +1,6 @@
 """Plumbing tests for matching, baselines and the scorer.
 
-The metric kernels are hand-written elsewhere. Where these tests need the scorer to run past
+The metric kernels have their own tests. Where these tests need the scorer to run past
 them, they swap in sentinel functions that count their inputs. A sentinel is not an
 implementation of any metric: it only shows which cases reached which call.
 """
@@ -170,7 +170,14 @@ def pairs_for(source, variable="rain_hourly", days=20):
     return core.make_pairs(source, variable, c, (0.1, 10.0))
 
 
-def test_scorer_names_the_missing_stub():
+def test_scorer_names_the_missing_stub(monkeypatch):
+    from tropics_scorecard.metrics import errors
+
+    def bias(forecast, observed):
+        raise NotImplementedError
+
+    bias.__module__ = errors.__name__
+    monkeypatch.setattr(errors, "bias", bias)
     p = pairs_for(Constant("x", 1.0), "temperature_2m")
     with pytest.raises(scorer.StubError, match="metrics.errors.bias"):
         scorer.score_pairs(p, {"source": "x"}, cfg())

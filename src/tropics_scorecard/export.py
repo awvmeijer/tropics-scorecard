@@ -248,7 +248,7 @@ def scores() -> Path:
 
 
 def metric_status() -> dict:
-    """Which hand-written metric functions exist yet. A stub raises NotImplementedError."""
+    """Which metric functions exist yet. A stub raises NotImplementedError."""
     from .metrics import bootstrap, categorical, episodes, errors, geo, probabilistic, timeseries
 
     probes = {

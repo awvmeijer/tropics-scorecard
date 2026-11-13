@@ -12,7 +12,23 @@ def contingency(forecast_yes, observed_yes):
 
     Inputs are equal-length sequences of booleans. ValueError otherwise.
     """
-    raise NotImplementedError("write me by hand: metrics.categorical.contingency")
+    if len(forecast_yes) != len(observed_yes):
+        raise ValueError("forecast and observed differ in length")
+    hits = misses = false_alarms = correct_negatives = 0
+    for f, o in zip(forecast_yes, observed_yes):
+        if f and o:
+            hits += 1
+        elif o:
+            misses += 1
+        elif f:
+            false_alarms += 1
+        else:
+            correct_negatives += 1
+    return hits, misses, false_alarms, correct_negatives
+
+
+def _ratio(top, bottom):
+    return None if bottom == 0 else top / bottom
 
 
 def pod(hits, misses, false_alarms, correct_negatives):
@@ -20,7 +36,7 @@ def pod(hits, misses, false_alarms, correct_negatives):
 
     None when no event was observed.
     """
-    raise NotImplementedError("write me by hand: metrics.categorical.pod")
+    return _ratio(hits, hits + misses)
 
 
 def far(hits, misses, false_alarms, correct_negatives):
@@ -28,7 +44,7 @@ def far(hits, misses, false_alarms, correct_negatives):
 
     None when no event was forecast.
     """
-    raise NotImplementedError("write me by hand: metrics.categorical.far")
+    return _ratio(false_alarms, hits + false_alarms)
 
 
 def csi(hits, misses, false_alarms, correct_negatives):
@@ -36,7 +52,7 @@ def csi(hits, misses, false_alarms, correct_negatives):
 
     None when the denominator is zero.
     """
-    raise NotImplementedError("write me by hand: metrics.categorical.csi")
+    return _ratio(hits, hits + misses + false_alarms)
 
 
 def ets(hits, misses, false_alarms, correct_negatives):
@@ -46,4 +62,8 @@ def ets(hits, misses, false_alarms, correct_negatives):
     ets = (hits - hits_random) / (hits + misses + false_alarms - hits_random)
     None when the denominator is zero.
     """
-    raise NotImplementedError("write me by hand: metrics.categorical.ets")
+    n = hits + misses + false_alarms + correct_negatives
+    if n == 0:
+        return None
+    hits_random = (hits + misses) * (hits + false_alarms) / n
+    return _ratio(hits - hits_random, hits + misses + false_alarms - hits_random)
