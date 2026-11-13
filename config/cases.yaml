@@ -1,5 +1,6 @@
 # Case-study candidates (docs/cases/candidates.md). Times are Singapore local time.
-# Two or three are chosen for the final write-up; the replay tool runs for all of them.
+# Chosen 2026-11-13: surge_2025_03, squall_2024_09_17, dry_2024_07. The replay tool runs for all of them.
+chosen: [surge_2025_03, squall_2024_09_17, dry_2024_07]
 cases:
   surge_2025_03:
     title: Northeast monsoon surge, 19 to 20 March 2025

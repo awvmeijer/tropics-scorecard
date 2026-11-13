@@ -1,6 +1,8 @@
 # Case-study candidates
 
-Status: shortlist, 11 November 2026. Two or three of these become case studies. Chosen from the gauge data first (`scripts/find_case_candidates.py`, which looks at no forecast), then checked against public reports that fix the dates. No forecast has been looked at for any of them.
+Status: chosen 13 November 2026: the March 2025 surge, the 17 September 2024 squall and the July 2024 dry spell. Chosen for the size and range of the events (record rain, the fastest convection, a long false-alarm test), before any forecast was looked at.
+
+Shortlist written 11 November 2026. Two or three of these become case studies. Chosen from the gauge data first (`scripts/find_case_candidates.py`, which looks at no forecast), then checked against public reports that fix the dates. No forecast has been looked at for any of them.
 
 | Candidate | Dates (Singapore) | What the gauges show | Public report | Why it is a useful test |
 |---|---|---|---|---|
