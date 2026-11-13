@@ -103,4 +103,4 @@ exclusions:
 # Page counts on the hosted site only (GitHub Pages). GoatCounter: no cookies, no personal data.
 # Empty code = no counter. The counter is added to docs/, never to the local dashboard.
 analytics:
-  goatcounter_code: ""
+  goatcounter_code: "tropics-scorecard"
