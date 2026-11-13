@@ -2,11 +2,23 @@
 
 How close was the forecast to what the instruments measured, and how sure are we?
 
-This repository scores hourly rain, temperature and wind forecasts for Singapore and the area around it against station observations, not against a reanalysis. Every comparison carries a 95 percent interval.
+This repository scores hourly rain, temperature and wind forecasts for Singapore against station observations, not against a reanalysis. Every comparison carries a 95 percent interval.
 
-Status: first full results, November 2026. Findings are in [docs/findings.md](docs/findings.md), case studies in [docs/cases/](docs/cases/), and what went wrong and why in [docs/failure_modes.md](docs/failure_modes.md).
+**[Read the one-page summary](https://awvmeijer.github.io/tropics-scorecard/)**: five findings and three replayed events, each with its chart.
 
-Start with the one-page summary, [dashboard/story.html](dashboard/story.html): five findings and three replayed events, each with its chart.
+![How it works: instruments and the forecast archive are matched, scored against baselines, and reported with intervals](docs/assets/pipeline.svg)
+
+## What it found
+
+![Difference in error against climatology, one day ahead, with 95 percent intervals](docs/assets/result.svg)
+
+- **Rain:** the best forecast beats the free baselines, but only by about 12 percent.
+- **Temperature:** no model beats climatology at a weather station. Both main models run cool.
+- **Wind:** every model is worse than a guess from history. A grid cell is not a mast between buildings.
+- **Matching:** which grid cell a station is paired with matters as much as which model is used.
+- **Data:** two of the first results were faults in the forecast archive, found and logged before anything was reported.
+
+The full write-up is in [docs/findings.md](docs/findings.md), the case studies in [docs/cases/](docs/cases/), and what went wrong and why in [docs/failure_modes.md](docs/failure_modes.md).
 
 ## Limits, first
 

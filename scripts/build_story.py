@@ -79,6 +79,7 @@ def main() -> None:
     template = (ROOT / "scripts" / "story_template.html").read_text(encoding="utf-8")
     out = template.replace("/*DATA*/null", json.dumps(data, separators=(",", ":")))
     (ROOT / "dashboard" / "story.html").write_text(out, encoding="utf-8")
+    (ROOT / "docs" / "index.html").write_text(out, encoding="utf-8")  # served by GitHub Pages
     print("wrote dashboard/story.html", len(out) // 1024, "kB", counts)
 
 
