@@ -2,11 +2,9 @@
 
 Written before any scoring. Changed only with a dated note at the bottom saying what changed and why.
 
-**Status: decisions 1 to 9 accepted by the author on 13 November 2026, before any forecast was scored.** Lines marked ACCEPTED were proposals in the draft of 11 November. Sections 1 and 8 are drafts for the author to review.
+**Status: decisions 1 to 9 accepted by the author on 13 November 2026, before any forecast was scored.** Lines marked ACCEPTED were proposals in the draft of 11 November. Sections 1 and 8 were written on 13 November and change no rule.
 
 ## 1. The decisions these scores should inform
-
-Draft for the author to review, 13 November 2026.
 
 1. **Should outdoor work or an event go ahead this afternoon, one to three days from now?** Needs rain occurrence and amount by hour of day at lead days 1 to 3. Scores: hourly rain MAE and the contingency scores at 0.1 and 1 mm, split by local hour.
 2. **Is a downpour likely tomorrow, enough to prepare drains or move equipment?** Needs hits and false alarms at 10 mm in an hour. Scores: probability of detection and false alarm ratio at 10 mm, with the number of observed events beside them.
@@ -14,7 +12,7 @@ Draft for the author to review, 13 November 2026.
 
 ## 2. Reference
 
-The reference is the station observation after quality control. Not a reanalysis.
+The reference is the station observation after quality control. Not a reanalysis. (ERA5 is used as a second reference only in the comparison added on 14 November; see the change log.)
 
 - **Observation error.** ACCEPTED: no correction for gauge undercatch or sensor error. Flagged readings are removed from the main table, and every table is computed a second time with flagged readings kept, so the effect of quality control is visible. The size of known errors (tipping-bucket undercatch in heavy rain and wind) is stated in the limits, not modelled.
 - **Point against grid cell.** A gauge measures one point; the forecast is an average over a cell 9 to 28 km wide. For rain this means a forecast will show more light rain and less heavy rain than any gauge, and hit scores at high thresholds are pulled down by the mismatch, not only by forecast error. For temperature and wind it means a coastal or urban station can differ from its cell for reasons the model cannot represent. ACCEPTED: every results page carries this sentence, and the frequency of each rain category is shown next to its scores, so a reader can see how much of a low score comes from the mismatch.
@@ -34,7 +32,7 @@ Evidence (`data/tables/openmeteo/grid.parquet`, 76 stations):
 | ECMWF IFS 9 km | about 9 km | 13 of 76 | 24 / 19 |
 | GFS | about 0.12 degrees (13 km) | 7 of 76 | 13 / 11 |
 
-For the ECMWF 0.25 degree grids, the two rules differ because of how such a grid sees Singapore. The cell that contains most of the island (centred at 1.25 N, 103.75 E, spanning 1.125 to 1.375 N) is mostly sea in the model, with a mean height of 0 m. Under the nearest rule a station is paired with the cell it sits in. Under the land rule Open-Meteo skips that cell and pairs 53 of the 54 Singapore stations south of 1.375 N with a cell centred in Johor, at 1.5 N, which does not contain them. The finer grids are affected less: for GFS the two rules differ for 7 stations. The station map on the dashboard shows both.
+For the ECMWF 0.25 degree grids, the two rules differ because of how such a grid sees Singapore. The cell that contains most of the island (centred at 1.25 N, 103.75 E, spanning 1.125 to 1.375 N) is mostly sea in the model, with a mean height of 0 m. Under the nearest rule a station is paired with the cell it sits in. Under the land rule Open-Meteo skips that cell and pairs 53 of the 54 Singapore stations south of 1.375 N with a cell centred in Johor, at 1.5 N, which does not contain them. The finer grids are affected less: for GFS the two rules differ for 7 stations. The station map on the dashboard shows both. With the grid extended to all 133 stations on 14 November (change log), the land rule moves 73 of the 74 scored stations in the island's southern cells.
 
 - ACCEPTED: pair each station with the nearest cell, which is the cell the station sits in. It is what the model said about that place. If the model's cell is too marine to hold Singapore's daily temperature cycle, that is a real limit of a 28 km grid and belongs in the results, not moved out of them by pairing with a cell in another country. The land rule is scored as a sensitivity check on the same cases and reported in one table, so the reader can see how much the choice matters.
 - This proposal was changed on 11 November, before any forecast was scored, after the cells were mapped (see the change log).
@@ -43,12 +41,12 @@ For the ECMWF 0.25 degree grids, the two rules differ because of how such a grid
 ### 3.2 Time
 
 - Forecast rain from Open-Meteo is the total over the hour ending at its time stamp (the first hour of a run is empty, checked 2026-11-10). Temperature and wind are instantaneous values at the time stamp.
-- Gauge readings are five-minute totals. The provider does not say whether a stamp marks the start or the end of its five minutes. In January to April 2017 stamps fell one second before each five-minute mark (for example 23:59:59), which points to the end. ACCEPTED: a stamp marks the end of its interval, so readings stamped 10:05 to 11:00 make the hour ending 11:00. This is tested before scoring by comparing gauge hourly totals at Changi with the airport record both ways; if the test points the other way, this line changes with a dated note.
+- Gauge readings are five-minute totals. The provider does not say whether a stamp marks the start or the end of its five minutes. In January to April 2017 stamps fell one second before each five-minute mark (for example 23:59:59), which points to the end. ACCEPTED: a stamp marks the end of its interval, so readings stamped 10:05 to 11:00 make the hour ending 11:00. The planned check against the airport record could not be run: the Changi airport reports hold almost no one-hour rain totals (eight in 2024, docs/source_check.md). Only the reading at each hour's edge depends on this rule, and 6-hour totals hardly at all.
 - All matching is in UTC. Hour of day is reported in Singapore time (UTC plus 8 hours, no daylight saving).
 
 ### 3.3 Instantaneous variables
 
-- Temperature (`DBT 1M F`) is a one-minute reading. Wind speed (`AVG(S)10M M1M`) appears from its reading type to be a 10-minute average reported every minute. To confirm in the station note.
+- Temperature (`DBT 1M F`) is a one-minute reading. Wind speed (`AVG(S)10M M1M`) appears from its reading type to be a 10-minute average reported every minute; the provider does not document it further.
 - ACCEPTED: pair the forecast with the reading stamped exactly on the hour. If that reading is missing or flagged, the hour is dropped, not filled from a neighbouring minute. Alternative: the mean of the readings from 5 minutes before to 5 minutes after the hour. It is less noisy but no longer the same moment as the forecast.
 - Airport reports (ISD): ACCEPTED: the report stamped on the hour, taking the SYNOP (temperature in tenths of a degree) over the METAR (whole degrees) when both exist. Half-hour reports are not used.
 - Units: station wind in knots is converted to metres per second (times 0.514444). Forecasts are requested in metres per second.
@@ -123,8 +121,6 @@ ACCEPTED: fixed calendar dates for every year, with the March boundary on the 15
 
 ## 8. What this protocol cannot tell you
 
-Draft for the author to review, 13 November 2026.
-
 - It compares a point with a grid cell. A low score can mean a poor forecast or a station that its cell does not represent, and this protocol cannot separate the two. It says nothing about how good a forecast is for an area.
 - The test period is two years and nine months. It holds three Northeast Monsoons in part, three first inter-monsoons, three Southwest Monsoons and two second inter-monsoons with part of a third. One unusual season moves a seasonal score.
 - ECMWF AIFS is scored from 24 February 2025 and ECMWF IFS 9 km from 7 October 2025. Their numbers are never pooled with the main table and should not be ranked against it.
@@ -142,7 +138,9 @@ Draft for the author to review, 13 November 2026.
 | 2026-11-13 | Bootstrap block length fixed at 8 days | First lag below 0.1 in the autocorrelation of daily persistence-minus-climatology MAE at lead day 1: rain 3 days, temperature 7, wind 8. The largest is used for all variables. No model forecast was read (`scripts/fix_block_length.py`) |
 | 2026-11-13 | GFS rain at lead days 5 and 7 excluded from scoring | Found on the first scoring run: the archived values average a third of the day-1 amount with the same share of wet hours, an archive fault (docs/failure_modes.md). Keeping them would have shown GFS improving with lead time. This change was made after seeing scores, and removes a result that looked good |
 | 2026-11-13 | Added a second rain test: 6-hour totals ending 00, 06, 12 and 18 UTC, bias, MAE and RMSE only | The first scoring run showed ECMWF IFS 0.25 and AIFS rain in the archive has 3-hour and 6-hour steps, so the hourly test is not fair to them. Added after seeing scores; the hourly results stay as they were |
-| 2026-11-13 | Sections 1 and 8 drafted | Drafts for the author to review and reword |
+| 2026-11-13 | Sections 1 and 8 written | They state the decisions the scores serve and the limits of the protocol; no rule changed |
 | 2026-11-14 | Added two summary tables (`scorer/summary.py`, config `summary_scores`): the change in MAE against climatology as a percentage of climatology's MAE on the same cases, at every lead day; and the relative quantile error of 6-hour rain totals at the 99th and 99.9th percentiles, against each gauge and against the mean of the gauges in each model cell (cell-times with at least 5 gauges), with the same 8-day block bootstrap | Added after the main scoring, while reviewing the delivery against published evaluations: the first is the scorecard layout of the GraphCast and GenCast papers, the second the extremes test of the FourCastNet paper. The two percentiles and the 5-gauge minimum were picked during a first look at these numbers, not fixed in advance; the paper's own range runs from the 90th to the 99.99th percentile. No earlier result changed |
 | 2026-11-14 | Added a decision score (`scorer/summary.py`, config `summary_scores`): the relative economic value of protecting whenever a forecast reaches the 10 mm heavy-rain threshold of section 4, in the hour and in the 6-hour total, at cost-loss ratios from 0.005 to 0.5, with the 8-day block bootstrap on daily contingency counts | Added after the main scoring, as the decision-based score section 1 asks for. The 10 mm threshold is the one already in section 4; the 6-hour window is the fair test for models with 3-hour and 6-hour steps (entry of 13 November). The list of cost-loss ratios was set before the table was computed. No earlier result changed |
 | 2026-11-14 | Added ERA5 (`ingest/era5.py`, `sources/era5.py`, `scorer/reanalysis.py`): ERA5 from the Open-Meteo archive, keyless, at each station's 0.25 degree cell under the same nearest-cell rule as the forecasts. Scored against the stations as a source on the one-day-ahead cases; then used as the judge on the same station-hours, with an ERA5 climatology from 2017 to 2023 (station cell, month, local hour) as the reference, and a direct GFS against ECMWF IFS 0.25 comparison under each judge | Added after the main scoring, to test how far the reanalysis that learned models are trained on sits from the instruments, and whether the verdict on a forecast depends on the judge. The station-judged scores are unchanged |
+| 2026-11-14 | Forecast cells fetched for every station, and everything rescored | The forecast grid had been built on 11 November from the station lists then on disk, so stations added to the network in 2026 (26 rain gauges, 19 temperature and 2 wind stations, 2 to 5 percent of the cases) had no forecast. Paired comparisons already used only cases both sides forecast, so their method is unchanged; single scores for the models now cover the same stations as the baselines |
+| 2026-11-14 | Section 3.2: the planned stamp check was not run | The airport record has too few one-hour rain totals to test it. The end-of-interval rule stands |

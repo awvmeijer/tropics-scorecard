@@ -10,8 +10,8 @@ Run on 10 November 2026 with real requests. Raw responses are in `data/raw/probe
 - Date parameter: `date=YYYY-MM-DD` returns the whole day, newest first, 25 readings per page. `date=YYYY-MM-DDTHH:MM:SS` returns one snapshot.
 - Pagination: `paginationToken` in the response, passed back as a query parameter. Confirmed on page 2.
 - Coverage start from the collection metadata: air temperature 2016-05-05, relative humidity 2016-11-16, wind direction 2016-11-29, rainfall 2016-12-02, wind speed 2016-12-08. Requests for June 2016 returned "Data not found" for rain, humidity and wind.
-- Rain: unit mm, reading type "TB1 Rainfall 5 Minute Total F", 5-minute totals, 47 to 67 stations depending on year. One day is about 12 pages.
-- Temperature, humidity, wind: 1-minute readings, 11 to 16 stations. Wind speed is in knots ("AVG(S)10M M1M"), direction in degrees. One day is about 58 pages per variable.
+- Rain: unit mm, reading type "TB1 Rainfall 5 Minute Total F", 5-minute totals, 47 to 67 stations on the days probed. One day is about 12 pages. (The full download found 54 to 80 gauges a year from 2017 to 2025, and 91 in 2026.)
+- Temperature, humidity, wind: 1-minute readings, 11 to 16 stations on the days probed (15 to 21 a year in the full download, and 35 temperature stations in 2026). Wind speed is in knots ("AVG(S)10M M1M"), direction in degrees. One day is about 58 pages per variable.
 - Timestamps carry +08:00 (Singapore time).
 - Access: no key needed, but requests without a key are rate limited to roughly one every 7 to 10 seconds (HTTP 429 otherwise). The default Python User-Agent gets HTTP 403; a named client works.
 - Bulk download: none. The collection is API only.
@@ -44,7 +44,7 @@ Model identifiers, accepted by the API (an unknown identifier returns an error):
 | ecmwf_aifs025_single | 2025-02-18 | 2025-02-24 | day 7 temperature: 318 hours in April 2026 |
 | ecmwf_ifs (9 km) | 2025-10-01 | 2025-10-07 | 3 to 7 percent, all in March to May 2026 |
 
-The brief's "most models from January 2024" is not right for ECMWF: IFS 0.25 starts in February 2024, and IFS HRES 9 km in Previous Runs only starts in October 2025. GFS temperature does exist before 2024 (non-empty in June 2021 and June 2023); GFS rain and wind do not.
+The plan's assumption that most models start in January 2024 does not hold for ECMWF: IFS 0.25 starts in February 2024, and IFS HRES 9 km in Previous Runs only starts in October 2025. GFS temperature does exist before 2024 (non-empty in June 2021 and June 2023); GFS rain and wind do not.
 
 ### Single Runs
 

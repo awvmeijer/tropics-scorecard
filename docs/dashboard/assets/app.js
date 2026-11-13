@@ -386,33 +386,12 @@ export function table(columns, rows) {
 
 // ------------------------------------------------------------------ status
 
-export function statusPanel(meta) {
-  const box = el("section", { class: "status", "aria-label": "Build status" });
-  const metrics = Object.values(meta.metrics || {});
-  const written = metrics.filter((s) => s === "written").length;
-  box.append(el("h3", { text: meta.scored ? "Scores are in" : "No scores yet" }));
-  box.append(el("p", { class: "note", text: meta.scored
-    ? "Every score below was computed after the verification protocol was fixed."
-    : "Scoring waits for two things: the verification protocol to be fixed, and the metric functions that compute every score. The data is downloading meanwhile." }));
-  if (meta.scored) {  // the build progress only matters while something is still missing
-    box.append(el("p", { class: "note", text: `Data generated ${meta.generated.replace("T", " ").replace("+00:00", " UTC")}.` }));
-    return box;
-  }
-  const grid = el("div", { class: "progress" });
-  const add = (name, done, want) => {
-    const pct = want ? Math.min(1, done / want) : 0;
-    const bar = el("div", { class: "bar", role: "progressbar", "aria-valuemin": 0, "aria-valuemax": want, "aria-valuenow": done, "aria-label": name });
-    const fillEl = el("span");
-    fillEl.style.width = `${(pct * 100).toFixed(1)}%`;
-    bar.append(fillEl);
-    grid.append(el("div", { class: "row" }, el("span", { class: "label", text: name }), bar, el("span", { class: "num", text: `${Math.round(pct * 100)}%` })));
-  };
-  add("Protocol fixed", meta.protocol_signed_off ? 1 : 0, 1);
-  add(`Metric functions (${written} of ${metrics.length})`, written, metrics.length);
-  for (const [name, d] of Object.entries(meta.downloads || {})) add(name, d.days_done, d.days_wanted);
-  box.append(grid);
-  box.append(el("p", { class: "note", text: `Data generated ${meta.generated.replace("T", " ").replace("+00:00", " UTC")}.` }));
-  return box;
+export function statusPanel(meta, withScores = true) {
+  const when = meta.generated.replace("T", " ").replace("+00:00", " UTC");
+  if (!withScores) return el("p", { class: "note", text: `Data generated ${when}.` });
+  return el("p", { class: "note", text: meta.scored
+    ? `Scored after the verification protocol was fixed. Data generated ${when}.`
+    : `No scores in this build: the verification protocol is not fixed yet. Data generated ${when}.` });
 }
 
 export const LIMITS = [

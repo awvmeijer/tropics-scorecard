@@ -42,7 +42,10 @@ def test_value_rejects_bad_input():
 def test_bootstrap_of_totals_matches_the_plain_statistic_and_brackets_it():
     rng = random.Random(2)
     rows = [(rng.randint(0, 3), rng.randint(0, 3), rng.randint(0, 5), rng.randint(20, 30)) for _ in range(120)]
-    stat = lambda t: relative_economic_value(*t, 0.1)  # noqa: E731
+
+    def stat(t):
+        return relative_economic_value(*t, 0.1)
+
     totals = tuple(sum(r[k] for r in rows) for k in range(4))
     point, low, high = block_bootstrap_ci_statistic(rows, stat, 5, n_resamples=300)
     assert point == pytest.approx(stat(totals))

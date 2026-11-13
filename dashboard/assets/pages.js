@@ -1,7 +1,7 @@
 import {
   MAIN, METRICS, REGIMES, REGIME_SHORT, SCORED, SOURCES, VARIABLES, VIEWS, el, fmt, fmtInt, heatmap, legend, limitsPanel, lineChart, load,
   pick, rowsOf, stationMap, statusPanel, table,
-} from "./app.js?v=18";
+} from "./app.js?v=20";
 
 const page = document.body.dataset.page;
 const $ = (id) => document.getElementById(id);
@@ -21,9 +21,7 @@ function select(id, labelText, options, value) {
 }
 
 function emptyScores(meta, what) {
-  const written = Object.values(meta.metrics || {}).filter((s) => s === "written").length;
-  const n = Object.keys(meta.metrics || {}).length;
-  return el("div", { class: "empty", text: `${what} appear here after scoring. Protocol ${meta.protocol_signed_off ? "fixed" : "in draft"}; ${written} of ${n} metric functions written.` });
+  return el("div", { class: "empty", text: `${what} appear here after scoring.` });
 }
 
 const base = { qc: "flags_removed", station: "all", hour_local: "all", regime: "all" };
@@ -80,6 +78,11 @@ async function scorecard() {
     const lc = el("div");
     chart.append(legend(MAIN.filter((id) => sel.some((r) => r.source === id))), lc);
     lineChart(lc, { series: series(sel, MAIN, "lead"), xs: leads, xFormat: (d) => `Day ${d}`, yFormat: (v) => fmt(v, state.metric === "brier" ? 3 : 2), zero: state.metric === "bias" });
+    if (thr !== null) {  // protocol section 2: show how often the event happened next to its scores
+      const ev = pick(rows, { ...base, variable: "rain_hourly", metric: "observed_events", lead_kind: "day", against: null })
+        .find((r) => r.threshold === thr && r.lead === 1 && r.source === "climatology");
+      if (ev) chart.append(el("p", { class: "note", text: `${thr} mm or more fell in ${fmt(100 * ev.value / ev.n_pairs, 2)} percent of station-hours (${fmtInt(ev.value)} of ${fmtInt(ev.n_pairs)}).` + (thr >= 10 ? " A gauge records more heavy hours than a grid-cell average can, so part of a low score at this threshold comes from that mismatch." : "") }));
+    }
     // Paired comparisons: only MAE and Brier have per-case values.
     const cm = state.metric === "brier" ? "brier" : "mae";
     const pairs = pick(rows, { ...base, variable: state.variable, metric: cm, lead_kind: "day" })
@@ -194,7 +197,7 @@ async function stations() {
 
 async function observationsPage() {
   const [cov, qc, di, meta] = await Promise.all([load("coverage"), load("qc"), load("diurnal"), load("meta")]);
-  if (meta) $("status").replaceWith(statusPanel(meta));
+  if (meta) $("status").replaceWith(statusPanel(meta, false));
   if (cov) {
     const vars = Object.keys(cov.variables);
     const state = { variable: vars[0] };

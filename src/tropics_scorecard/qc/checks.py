@@ -12,10 +12,6 @@ import pandas as pd
 FLAG_COLUMNS = ["station_id", "time_utc", "check", "detail"]
 
 
-class BlockedByStub(RuntimeError):
-    """A metric function this check needs is still a stub."""
-
-
 def _empty() -> pd.DataFrame:
     return pd.DataFrame(columns=FLAG_COLUMNS)
 
@@ -123,13 +119,10 @@ def stuck_dry(hourly: pd.DataFrame, stations: pd.DataFrame, radius_km: float,
     from ..metrics.geo import haversine_km
 
     pts = stations.drop_duplicates("station_id").set_index("station_id")[["latitude", "longitude"]]
-    try:
-        neighbours = {}
-        for a, pa in pts.iterrows():
-            neighbours[a] = [b for b, pb in pts.iterrows()
-                             if b != a and haversine_km(pa.latitude, pa.longitude, pb.latitude, pb.longitude) <= radius_km]
-    except NotImplementedError as err:
-        raise BlockedByStub(str(err)) from err
+    neighbours = {}
+    for a, pa in pts.iterrows():
+        neighbours[a] = [b for b, pb in pts.iterrows()
+                         if b != a and haversine_km(pa.latitude, pa.longitude, pb.latitude, pb.longitude) <= radius_km]
     wide = hourly.pivot_table(index="time_utc", columns="station_id", values="value")
     rows = []
     for station, near in neighbours.items():

@@ -21,34 +21,22 @@ GROUPS = {"all": [], "hour_local": ["hour_local"], "regime": ["regime"], "statio
 BASELINES = ("persistence", "climatology")
 
 
-class StubError(RuntimeError):
-    """A metric function the scorer needs is still a stub."""
-
-
 class NotReady(RuntimeError):
     """The protocol has not been signed off, so nothing may be scored."""
 
 
-def _call(fn, *args, **kwargs):
-    try:
-        return fn(*args, **kwargs)
-    except NotImplementedError as err:
-        mod = fn.__module__.rsplit(".", 1)[-1]
-        raise StubError(f"the scorer needs metrics.{mod}.{fn.__name__}, which is still a stub") from err
-
-
 def _mse(forecast, observed):
-    return _call(errors.rmse, forecast, observed) ** 2
+    return errors.rmse(forecast, observed) ** 2
 
 
 def _brier(probabilities, outcomes):
-    return _call(probabilistic.brier_score, probabilities, outcomes)
+    return probabilistic.brier_score(probabilities, outcomes)
 
 
 # metric name -> (daily function, columns it takes, transform of the bootstrap output)
 CONTINUOUS = {
-    "bias": (lambda f, o: _call(errors.bias, f, o), ("forecast", "observed"), None),
-    "mae": (lambda f, o: _call(errors.mae, f, o), ("forecast", "observed"), None),
+    "bias": (lambda f, o: errors.bias(f, o), ("forecast", "observed"), None),
+    "mae": (lambda f, o: errors.mae(f, o), ("forecast", "observed"), None),
     "rmse": (_mse, ("forecast", "observed"), lambda x: math.sqrt(max(x, 0.0))),
 }
 CONTINGENCY = ("pod", "far", "csi", "ets")
@@ -134,8 +122,8 @@ def interval(values_a: list, values_b: list | None, cfg: dict):
     if len(values_a) < 2 * block:
         return None
     other = values_b if values_b is not None else [0.0] * len(values_a)
-    return _call(bootstrap.block_bootstrap_ci_mean_diff, values_a, other, block,
-                 n_resamples=int(b["resamples"]), alpha=float(b["alpha"]), seed=int(b["seed"]))
+    return bootstrap.block_bootstrap_ci_mean_diff(values_a, other, block, n_resamples=int(b["resamples"]),
+                                                  alpha=float(b["alpha"]), seed=int(b["seed"]))
 
 
 def _row(meta: dict, group: str, gk: tuple, **kw) -> dict:
@@ -179,10 +167,10 @@ def score_pairs(p: pd.DataFrame, meta: dict, cfg: dict, groups=("all",), metrics
             parts = p.groupby(keys, observed=True) if keys else [((), p)]
             for gk, sub in parts:
                 gk = gk if isinstance(gk, tuple) else (gk,)
-                table = _call(categorical.contingency, sub[f"yes_{t}"].tolist(), (sub[f"obs_{t}"] == 1).tolist())
+                table = categorical.contingency(sub[f"yes_{t}"].tolist(), (sub[f"obs_{t}"] == 1).tolist())
                 n_days = sub["day"].nunique()
                 for name in CONTINGENCY:
-                    v = _call(getattr(categorical, name), *table)
+                    v = getattr(categorical, name)(*table)
                     rows.append(_row(meta, group, gk, against=None, metric=name, threshold=t, value=v, low=None,
                                      high=None, n_pairs=len(sub), n_days=n_days))
                 h, mi, fa, _ = table
@@ -226,8 +214,8 @@ def compare_pairs(pa: pd.DataFrame, pb: pd.DataFrame, meta: dict, against: str, 
 
 def check_ready(cfg: dict) -> None:
     if cfg.get("proposals_accepted") is not True:
-        raise NotReady("config proposals_accepted is not true: the verification protocol is not signed off "
-                       "(CLAUDE.md stop point 2), so nothing is scored")
+        raise NotReady("config proposals_accepted is not true: the verification protocol is not signed off, "
+                       "so nothing is scored")
     if str(cfg["bootstrap"].get("block_length_days", "TODO")).upper() == "TODO":
         raise NotReady("bootstrap.block_length_days is not fixed yet (protocol section 7)")
 
@@ -369,18 +357,18 @@ def run(source: ForecastSource | str, cfg: dict, variables=VARIABLES, lead_kinds
 def run_all(cfg: dict, variables=VARIABLES, workers: int | None = None) -> pd.DataFrame:
     """Every source, every comparison, every lead time. Writes data/tables/results/results.parquet."""
     check_ready(cfg)
-    todo = jobs(cfg, variables)
+    work = jobs(cfg, variables)
     workers = workers or max(1, (os.cpu_count() or 2) - 2)
     rows: list[dict] = []
     if workers == 1:
-        for t in todo:
+        for t in work:
             rows += job(*t)
     else:
         with ProcessPoolExecutor(max_workers=workers) as ex:
-            for i, r in enumerate(ex.map(_job, todo, chunksize=1), 1):
+            for i, r in enumerate(ex.map(_job, work, chunksize=1), 1):
                 rows += r
-                if i % 10 == 0 or i == len(todo):
-                    print(f"scored {i}/{len(todo)} jobs", flush=True)
+                if i % 10 == 0 or i == len(work):
+                    print(f"scored {i}/{len(work)} jobs", flush=True)
     df = to_frame(rows)
     OUT.mkdir(parents=True, exist_ok=True)
     df.to_parquet(OUT / "results.parquet", index=False)

@@ -6,8 +6,8 @@ Endpoint: https://api-open.data.gov.sg/v2/real-time/api/<variable>
 - `date=YYYY-MM-DDTHH:MM:SS` returns a single snapshot.
 Without a key the API allows roughly one request every 7 to 10 seconds.
 
-Usage:
-    python -m tropics_scorecard.ingest.datagovsg rainfall 2024-02-04 2026-10-31
+Usage (the v1 mode below is the one used for this study):
+    python -m tropics_scorecard.ingest.datagovsg rainfall,air-temperature,wind-speed 2017-01-01 2026-10-31 --v1
     python -m tropics_scorecard.ingest.datagovsg air-temperature,wind-speed 2024-02-04 2026-10-31 --snapshots
 
 A snapshot request for HH:MM:SS returns the reading stamped HH:MM:00 for every station

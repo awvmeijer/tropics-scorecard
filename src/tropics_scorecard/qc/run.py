@@ -97,18 +97,14 @@ def run_datagovsg(cfg: dict, variable: str, year: int) -> dict:
     if variable == "air-temperature":
         tz = qc["timezone"]["expected_local_hour_of_max"]
         parts.append(checks.timezone_check(d, cfg["region"]["local_timezone"], tz["min"], tz["max"]))
-    blocked = None
     if variable == "rainfall":
         st = pd.read_parquet(TABLES / "datagovsg" / f"stations_{variable}_{year}.parquet")
         sd = qc["stuck_dry"]
         h = hourly_rain(d)
         h = h[h["n_readings"] == 12]
-        try:
-            parts.append(checks.stuck_dry(h, st, sd["radius_km"], sd["min_neighbours"], sd["neighbour_median_mm"]))
-        except checks.BlockedByStub as err:
-            blocked = str(err)
+        parts.append(checks.stuck_dry(h, st, sd["radius_km"], sd["min_neighbours"], sd["neighbour_median_mm"]))
     flags = _save(pd.concat(parts, ignore_index=True), "datagovsg", variable, f"_{year}")
-    return {"summary": summarise(flags, int(d["value"].notna().sum())), "blocked": blocked}
+    return {"summary": summarise(flags, int(d["value"].notna().sum()))}
 
 
 def main(argv=None) -> int:
@@ -124,8 +120,6 @@ def main(argv=None) -> int:
     else:
         r = run_datagovsg(cfg, args.variable, args.year)
         print(r["summary"].to_string(index=False))
-        if r["blocked"]:
-            print(f"BLOCKED: stuck_dry check skipped, needs a metric function: {r['blocked']}")
     return 0
 
 

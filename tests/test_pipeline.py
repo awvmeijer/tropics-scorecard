@@ -154,7 +154,9 @@ def sentinels(monkeypatch):
     """Count-only stand-ins for the metric kernels."""
     from tropics_scorecard.metrics import bootstrap, categorical, errors, probabilistic
 
-    count = lambda f, o: float(len(f))  # noqa: E731
+    def count(f, o):
+        return float(len(f))
+
     for name in ("bias", "mae", "rmse"):
         monkeypatch.setattr(errors, name, count)
     monkeypatch.setattr(probabilistic, "brier_score", count)
@@ -168,19 +170,6 @@ def sentinels(monkeypatch):
 def pairs_for(source, variable="rain_hourly", days=20):
     c = core.cases_for(cfg(), variable, "day", 1, reference=reference(days=days))
     return core.make_pairs(source, variable, c, (0.1, 10.0))
-
-
-def test_scorer_names_the_missing_stub(monkeypatch):
-    from tropics_scorecard.metrics import errors
-
-    def bias(forecast, observed):
-        raise NotImplementedError
-
-    bias.__module__ = errors.__name__
-    monkeypatch.setattr(errors, "bias", bias)
-    p = pairs_for(Constant("x", 1.0), "temperature_2m")
-    with pytest.raises(scorer.StubError, match="metrics.errors.bias"):
-        scorer.score_pairs(p, {"source": "x"}, cfg())
 
 
 def test_scorer_groups_and_counts(sentinels):
@@ -215,7 +204,7 @@ def test_comparison_uses_common_cases_only(sentinels):
 
 
 def test_nothing_is_scored_before_sign_off():
-    with pytest.raises(core.NotReady, match="stop point 2"):
+    with pytest.raises(core.NotReady, match="not signed off"):
         core.check_ready(cfg(proposals_accepted=False))
     with pytest.raises(core.NotReady, match="block_length_days"):
         core.check_ready(cfg(bootstrap={"block_length_days": "TODO"}))

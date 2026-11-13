@@ -1,6 +1,6 @@
 # Observation note: airport reports (NOAA Integrated Surface Database)
 
-Status: first draft, 10 November 2026. Based on all reports from seven airports, 2017 to 2025.
+Based on all reports from seven airports, 2017 to 2025.
 
 ## What it measures
 
@@ -44,7 +44,7 @@ Airport weather reports, decoded by NOAA into one CSV per station per year. Time
 
 ## Effect on scores
 
-To be filled after the scores are computed with and without flags. ISD covers only part of the study period, so its scores will be reported for that part alone.
+The airports are scored together with the data.gov.sg stations, on the hours where they report, so they count up to 24 August 2025 and not after. Their flags are included in the comparison in the data.gov.sg note: removing every flagged reading changes no one-day-ahead score by more than 0.001.
 
 ## Sources
 

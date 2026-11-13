@@ -106,7 +106,8 @@ def result(theme: str) -> str:
     H = top + len(rows) * rh + len(groups) * 30 + 56
     lo = min(min(r[3] for r in rows), 0) - 0.05
     hi = max(r[4] for r in rows) + 0.05
-    X = lambda v: left + (v - lo) / (hi - lo) * (W - left - right)  # noqa: E731
+    def X(v):
+        return left + (v - lo) / (hi - lo) * (W - left - right)
     s = [frame(t, W, H, "Difference in mean absolute error against climatology, one day ahead, with 95 percent intervals. Rain forecasts are slightly better than climatology; temperature and wind forecasts are worse."),
          stage(t, 44, "ERROR AGAINST CLIMATOLOGY · ONE DAY AHEAD · 95 PERCENT INTERVALS"),
          f'<text x="{X(0) - 12}" y="78" text-anchor="end" {SANS} font-size="12.5" fill="{t["sub"]}">← better than climatology</text>',

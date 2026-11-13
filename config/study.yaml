@@ -1,5 +1,4 @@
 # Everything the scorer reads. The verification protocol explains each choice in words.
-# Values marked TODO are fixed at the stop points in CLAUDE.md, not before.
 
 region:
   name: Singapore and surroundings
@@ -17,18 +16,18 @@ variables:
   - temperature_2m
   - wind_speed_10m
 
-# Values marked "proposed" were accepted on 2026-11-13 (docs/verification_protocol.md).
+# The protocol's decisions were accepted on 2026-11-13 (docs/verification_protocol.md).
 # The scorer refuses to run while proposals_accepted is false.
-proposals_accepted: true    # signed off 2026-11-13, protocol change log
+proposals_accepted: true
 
-rain_thresholds_mm_per_hour: [0.1, 1.0, 10.0]   # proposed, protocol section 4
+rain_thresholds_mm_per_hour: [0.1, 1.0, 10.0]   # protocol section 4
 
 lead_times:
   days: [1, 2, 3, 5, 7]
-  hours: {max: 168, table_bin: 6}               # proposed, protocol 6.1
-  single_run_hours_utc: [0, 12]                 # proposed, protocol 3.5
+  hours: {max: 168, table_bin: 6}               # protocol 6.1
+  single_run_hours_utc: [0, 12]                 # protocol 3.5
 
-matching:                                       # proposed, protocol section 3
+matching:                                       # protocol section 3
   cell_rule: nearest                            # the cell the station sits in; main table
   cell_rule_sensitivity: land                   # Open-Meteo's land preference, sensitivity check only
   gauge_stamp: end                              # a 5-minute stamp marks the end of its interval
@@ -36,12 +35,12 @@ matching:                                       # proposed, protocol section 3
   instant_window_minutes: 0                     # temperature and wind: the reading stamped on the hour
   knots_to_ms: 0.514444
 
-baselines:                                      # proposed, protocol section 5
+baselines:                                      # protocol section 5
   persistence_day_offset_hours: 24              # lead day N uses the observation 24N hours earlier
   climatology_min_years: 3                      # fewer years of history: network climatology
   climatology_event_probability_cut: 0.5        # climatology says "yes" to an event at this frequency
 
-regimes:                                        # proposed, protocol 6.3, fixed calendar dates (month-day)
+regimes:                                        # protocol 6.3, fixed calendar dates (month-day)
   northeast_monsoon: {start: "12-01", end: "03-15"}
   inter_monsoon_1: {start: "03-16", end: "05-31"}
   southwest_monsoon: {start: "06-01", end: "09-30"}
@@ -59,7 +58,7 @@ secondary_forecast_sources:
   - {id: ecmwf_ifs, from: 2025-10-07}
 
 bootstrap:
-  unit: day                                     # proposed, protocol section 7: daily series
+  unit: day                                     # protocol section 7: daily series
   block_length_days: 8                          # fixed 2026-11-13 from baseline errors, scripts/fix_block_length.py
   resamples: 2000
   alpha: 0.05
@@ -67,7 +66,7 @@ bootstrap:
 
 quality_control:
   score_with_and_without_flags: true
-  # Starting values for the checks, to be reviewed in the observation notes. Units as stored.
+  # Check thresholds, fixed before scoring. Units as stored.
   range:
     rainfall_mm_per_5min: {min: 0, max: 30}
     air_temperature_c: {min: 18, max: 40}

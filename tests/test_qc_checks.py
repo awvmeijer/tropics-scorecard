@@ -1,5 +1,4 @@
 import pandas as pd
-import pytest
 
 from tropics_scorecard.qc import checks
 
@@ -56,14 +55,3 @@ def test_timezone_check_flags_shifted_clock():
     shifted = good.assign(time_utc=good["time_utc"] + pd.Timedelta(hours=8), station_id="S2")
     f = checks.timezone_check(shifted, "Asia/Singapore", 11, 17)
     assert set(f["station_id"]) == {"S2"}
-
-
-def test_stuck_dry_reports_blocked_stub_cleanly():
-    hourly = pd.DataFrame({"station_id": ["A"], "time_utc": [pd.Timestamp("2024-03-01", tz="UTC")], "value": [0.0]})
-    stations = pd.DataFrame({"station_id": ["A", "B"], "latitude": [1.3, 1.31], "longitude": [103.8, 103.81]})
-    try:
-        checks.stuck_dry(hourly, stations, 10, 1, 5.0)
-    except checks.BlockedByStub as err:
-        assert "haversine_km" in str(err)
-    else:
-        pytest.skip("metrics.geo.haversine_km is implemented; blocked path no longer reachable")

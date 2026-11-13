@@ -10,12 +10,7 @@ exports/
 *.parquet
 *.duckdb
 .DS_Store
-node_modules/
-.next/
 
-# Personal notes: never commit
-CLAUDE.md
-docs/BRIEF.md
 logs/
 *.egg-info/
 

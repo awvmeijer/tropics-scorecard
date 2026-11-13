@@ -1,6 +1,6 @@
 # Observation note: Changi radiosonde (Integrated Global Radiosonde Archive, version 2)
 
-Status: first draft, 10 November 2026. Based on soundings from 2021 to 8 November 2026 unless stated.
+Based on soundings from 2021 to 8 November 2026 unless stated.
 
 ## What it measures
 
@@ -31,7 +31,7 @@ The 06 and 18 UTC soundings carry a release time equal to the nominal time, whic
 | Balloon drift | Not visible directly: IGRA v2 has no position per level. Integrating the reported wind over time since launch gives the drift | Median 6.0 km by 300 hPa, 90th percentile 10.9 km, largest 37.3 km (3,927 soundings) | None; stated on every case page that uses a sounding |
 | Nominal time is not launch time | See the table above | Every sounding | Use release time where present |
 | Missing surface humidity | RH -9999 at the surface level | Every sounding | Use dewpoint depression |
-| Quality flags | A letter after pressure, height and temperature (B seen so far); meanings to be checked against the format document | Not yet counted | To add: count flags per variable |
+| Quality flags | A letter after pressure, height and temperature. In the format document, A means the value lies within the station's all-year climatological limits, B that it also passes a check for its time of year and time of day, and a blank that no climatology check was applied. Values that fail are already removed by the archive (-8888) | Temperature on all 1,035,115 stored levels: B 61 percent, A 2 percent, blank 37 percent. Height: B 48 percent, blank 52 percent | None needed: no letter marks a failure |
 
 ## What it cannot see
 

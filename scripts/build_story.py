@@ -113,9 +113,9 @@ def main() -> None:
             "counts": counts, "skill": skill, "ext": ext, "heavy": heavy, "dec": dec, "rea": rea, "reb": reb,
             "rex": rex, "scored": len(scored)}
     template = (ROOT / "scripts" / "story_template.html").read_text(encoding="utf-8")
-    out = template.replace("/*DATA*/null", json.dumps(data, separators=(",", ":")))
-    (ROOT / "dashboard" / "story.html").write_text(out, encoding="utf-8")
-    (ROOT / "docs" / "index.html").write_text(out, encoding="utf-8")  # served by GitHub Pages
+    page = template.replace("/*DATA*/null", json.dumps(data, separators=(",", ":")))
+    (ROOT / "dashboard" / "story.html").write_text(page, encoding="utf-8")
+    (ROOT / "docs" / "index.html").write_text(page, encoding="utf-8")  # served by GitHub Pages
     # The hosted copy of the full dashboard, served by GitHub Pages next to the summary.
     import shutil
 
@@ -124,7 +124,7 @@ def main() -> None:
     shutil.copytree(ROOT / "dashboard", site, ignore=shutil.ignore_patterns("story.html"))
     (ROOT / "docs" / ".nojekyll").write_text("")
     add_counter(site)
-    print("wrote dashboard/story.html", len(out) // 1024, "kB", counts)
+    print("wrote dashboard/story.html", len(page) // 1024, "kB", counts)
 
 
 def add_counter(site: Path) -> None:

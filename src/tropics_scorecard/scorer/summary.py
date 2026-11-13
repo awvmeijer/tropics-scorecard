@@ -158,7 +158,9 @@ def decision_table(cfg: dict, sources=None) -> pd.DataFrame:
                 daily = [tuple(int(x) for x in r) for r in counts.itertuples(index=False)]
                 total = tuple(int(x) for x in counts.sum())
                 for a in s["cost_loss_ratios"]:
-                    value = lambda c, a=a: categorical.relative_economic_value(*c, a)  # noqa: E731
+                    def value(counts, a=a):
+                        return categorical.relative_economic_value(*counts, a)
+
                     try:
                         v, lo, hi = bootstrap.block_bootstrap_ci_statistic(
                             daily, value, int(b["block_length_days"]), n_resamples=int(b["resamples"]),

@@ -1,8 +1,8 @@
 # Case-study candidates
 
-Status: chosen 13 November 2026: the March 2025 surge, the 17 September 2024 squall and the July 2024 dry spell. Chosen for the size and range of the events (record rain, the fastest convection, a long false-alarm test), before any forecast was looked at.
+Chosen on 13 November 2026: the March 2025 surge, the 17 September 2024 squall and the July 2024 dry spell. Chosen for the size and range of the events (record rain, the fastest convection, a long false-alarm test), before any forecast was looked at.
 
-Shortlist written 11 November 2026. Two or three of these become case studies. Chosen from the gauge data first (`scripts/find_case_candidates.py`, which looks at no forecast), then checked against public reports that fix the dates. No forecast has been looked at for any of them.
+Shortlist written 11 November 2026, to choose two or three case studies. Chosen from the gauge data first (`scripts/find_case_candidates.py`, which looks at no forecast), then checked against public reports that fix the dates. No forecast has been looked at for any of them.
 
 | Candidate | Dates (Singapore) | What the gauges show | Public report | Why it is a useful test |
 |---|---|---|---|---|
@@ -13,4 +13,4 @@ Shortlist written 11 November 2026. Two or three of these become case studies. C
 
 The dry spell found in the gauge data matches the official dates to the day, which is a useful check that the reference table and its daily aggregation are right.
 
-Other dates the data flags, not yet checked against reports: widespread intense hours at 04:00 on 22 June 2024, 14 September 2024 and 11 May 2025 (pre-dawn, the usual time for a Sumatra squall), and 15:00 on 13 April 2025 (43 of 56 gauges at 20 mm or more in one hour).
+Other dates the data flags, not checked against reports: widespread intense hours at 04:00 on 22 June 2024, 14 September 2024 and 11 May 2025 (pre-dawn, the usual time for a Sumatra squall), and 15:00 on 13 April 2025 (43 of 56 gauges at 20 mm or more in one hour).

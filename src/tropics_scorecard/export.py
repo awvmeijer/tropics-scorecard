@@ -254,75 +254,12 @@ def scores() -> Path:
     return _write("scores.json", {"columns": cols, "rows": rows})
 
 
-def metric_status() -> dict:
-    """Which metric functions exist yet. A stub raises NotImplementedError."""
-    from .metrics import bootstrap, categorical, episodes, errors, geo, probabilistic, timeseries
-
-    probes = {
-        errors: {"bias": ([1.0], [1.0]), "mae": ([1.0], [1.0]), "rmse": ([1.0], [1.0]),
-                 "rmse_by_lead_time": ([(1, 1.0, 1.0)],)},
-        categorical: {"contingency": ([True], [True]), "pod": (1, 0, 0, 0), "far": (1, 0, 0, 0),
-                      "csi": (1, 0, 0, 0), "ets": (1, 0, 0, 1)},
-        probabilistic: {"brier_score": ([0.5], [1]), "reliability_table": ([0.5], [1], 2), "crps_ensemble": ([1.0], 1.0)},
-        bootstrap: {"bootstrap_ci_mean_diff": ([1.0, 2.0], [1.0, 1.0], 10), "block_bootstrap_ci_mean_diff": ([1.0, 2.0], [1.0, 1.0], 1, 10)},
-        geo: {"haversine_km": (1.0, 103.0, 1.0, 104.0), "nearest_station": (1.0, 103.0, {"a": (1.0, 103.0)})},
-        timeseries: {"rolling_mean": ([1.0, 2.0], 1), "resample_mean": ([0, 1], [1.0, 2.0], 1, 0)},
-        episodes: {"merge_intervals": ([(0, 1)],)},
-    }
-    status = {}
-    for mod, fns in probes.items():
-        for name, args in fns.items():
-            try:
-                getattr(mod, name)(*args)
-                state = "written"
-            except NotImplementedError:
-                state = "stub"
-            except Exception:  # written, but our probe input upset it: still not a stub
-                state = "written"
-            status[f"{mod.__name__.rsplit('.', 1)[-1]}.{name}"] = state
-    return status
-
-
-def downloads(cfg: dict) -> dict:
-    """Days on disk against days wanted, per download stream."""
-    from .ingest.datagovsg import CACHE
-
-    per = cfg["period"]
-    # Observations start early enough for persistence at the longest lead day.
-    first = dt.date.fromisoformat(str(per["day_level_lead_times"]["start"])) - dt.timedelta(days=max(cfg["lead_times"]["days"]))
-    test = (first, dt.date.fromisoformat(str(per["day_level_lead_times"]["end"])))
-    clim = (dt.date.fromisoformat(str(per["climatology_years"]["start"])), dt.date.fromisoformat(str(per["climatology_years"]["end"])))
-
-    def done(folder: Path, span) -> int:
-        n = 0
-        for y in range(span[0].year, span[1].year + 1):
-            for d in (folder / str(y)).glob("*/DONE") if (folder / str(y)).exists() else []:
-                day = dt.date.fromisoformat(d.parent.name)
-                n += span[0] <= day <= span[1]
-        return n
-
-    want = lambda s: (s[1] - s[0]).days + 1  # noqa: E731
-    out = {}
-    for label, folder, span in [
-        ("Rain, test period", CACHE / "rainfall", test),
-        ("Temperature, test period", CACHE / "air-temperature-v1", test),
-        ("Wind, test period", CACHE / "wind-speed-v1", test),
-        ("Rain, climatology years", CACHE / "rainfall-v1", clim),
-        ("Temperature, climatology years", CACHE / "air-temperature-v1", clim),
-        ("Wind, climatology years", CACHE / "wind-speed-v1", clim),
-    ]:
-        out[label] = {"days_done": done(folder, span), "days_wanted": want(span)}
-    return out
-
-
 def meta(cfg: dict) -> Path:
     results = TABLES / "results" / "results.parquet"
     return _write("meta.json", {
         "generated": dt.datetime.now(dt.timezone.utc).isoformat(timespec="minutes"),
         "protocol_signed_off": cfg.get("proposals_accepted") is True,
         "scored": results.exists(),
-        "metrics": metric_status(),
-        "downloads": downloads(cfg),
         "period": {k: {kk: str(vv) for kk, vv in v.items()} for k, v in cfg["period"].items()},
         "variables": cfg["variables"],
         "sources": cfg["forecast_sources"],

@@ -3,9 +3,9 @@
     python -m tropics_scorecard.cases.replay surge_2025_03
     python -m tropics_scorecard.cases.replay --all
 
-Writes dashboard/data/cases/<id>.json and, the first time only, a page skeleton in
-docs/cases/<id>.md. The skeleton has the facts and tables; the diagnosis is left for the
-author to write, and a later run never overwrites the page.
+Writes dashboard/data/cases/<id>.json and, the first time only and for chosen cases, a
+first page in docs/cases/<id>.md with the facts and the forecast table. The diagnosis is
+left for the author, and a later run never overwrites the page.
 
 What goes in:
 - observations: hourly network mean, gauges with rain, and the wettest gauge, for rain;
@@ -136,11 +136,41 @@ def replay(case_id: str, cfg: dict | None = None) -> Path:
     OUT.mkdir(parents=True, exist_ok=True)
     path = OUT / f"{case_id}.json"
     path.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
-    _skeleton(case_id, case, payload)
+    chosen = yaml.safe_load(CASES.read_text(encoding="utf-8")).get("chosen") or []
+    if case_id in chosen:
+        _skeleton(case_id, case, payload, cfg)
     return path
 
 
-def _skeleton(case_id: str, case: dict, payload: dict) -> None:
+def forecast_table(payload: dict, cfg: dict) -> str:
+    """Event totals of the network-mean rain, per source and lead day, as a Markdown table."""
+    from ..scorer.core import excluded
+
+    rain = payload["observed"]["rain_hourly"]
+    total = sum((r["mean"] or 0) for r in rain)
+    names = {"gfs_global": "GFS", "ecmwf_ifs025": "ECMWF IFS 0.25", "persistence": "Persistence",
+             "climatology": "Climatology"}
+    lines = ["| Source | " + " | ".join(f"Lead day {d}" for d in LEADS) + " |", "|---" * (len(LEADS) + 1) + "|",
+             f"| Gauges | {total:.1f} mm |" + " |" * (len(LEADS) - 1)]
+    for name, by_lead in payload["forecasts"].get("rain_hourly", {}).items():
+        cells = []
+        for d in LEADS:
+            pts = by_lead.get(str(d)) or []
+            if not pts:
+                cells.append("")
+                continue
+            note = " (archive fault at this lead, not scored)" if excluded(cfg, name, "rain_hourly", "day", d) else ""
+            cells.append(f"{sum(p['mean'] or 0 for p in pts):.1f} mm{note}")
+            if name == "climatology":
+                cells += [""] * (len(LEADS) - 1)
+                break
+        lines.append(f"| {names.get(name, name)} | " + " | ".join(cells) + " |")
+    return "\n".join(lines)
+
+
+def _skeleton(case_id: str, case: dict, payload: dict, cfg: dict) -> None:
+    """A first page for a chosen case: the facts and the forecast table. The diagnosis is
+    left for the author, and a page that exists is never overwritten."""
     page = PAGES / f"{case_id}.md"
     if page.exists():
         return
@@ -148,6 +178,7 @@ def _skeleton(case_id: str, case: dict, payload: dict) -> None:
     peak = max(rain, key=lambda r: r["mean"] or 0) if rain else None
     total = sum((r["mean"] or 0) for r in rain)
     src = "\n".join(f"- {u}" for u in payload["sources"])
+    table = forecast_table(payload, cfg) if payload["forecasts_included"] else "Forecasts appear here once the verification protocol is signed off."
     text = f"""# {case['title']}
 
 Window: {case['start']} to {case['end']}, Singapore time. Replay: `python -m tropics_scorecard.cases.replay {case_id}`.
@@ -161,19 +192,15 @@ From the gauges: network-mean rain over the window {total:.1f} mm.{f" The wettes
 
 ## What each forecast said
 
-Filled in by the replay tool once the protocol is signed off: network-mean forecast at lead days 1, 3 and 5, against the gauges.
+Network-mean rain over the window, on the same stations and hours as the gauges.
+
+{table}
 
 ## The sounding
 
-Changi soundings in the window and the last one before it are in the case data and on the dashboard.
-
 ## Diagnosis
 
-To write: what physically happened, and why each forecast went the way it did.
-
 ## Failure mode
-
-To write: one entry for docs/failure_modes.md.
 """
     PAGES.mkdir(parents=True, exist_ok=True)
     page.write_text(text, encoding="utf-8")

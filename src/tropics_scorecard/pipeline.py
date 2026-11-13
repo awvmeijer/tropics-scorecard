@@ -48,8 +48,7 @@ def build(cfg: dict) -> None:
         for y in YEARS:
             if (TABLES / "datagovsg" / f"readings_{v}_{y}.parquet").exists():
                 r = qc.run_datagovsg(cfg, v, y)
-                note = f" (blocked: {r['blocked']})" if r["blocked"] else ""
-                print(f"   {v} {y}: {int(r['summary']['flags'].sum()) if len(r['summary']) else 0} flags{note}", flush=True)
+                print(f"   {v} {y}: {int(r['summary']['flags'].sum()) if len(r['summary']) else 0} flags", flush=True)
     qc.run_isd(cfg)
     _done(t)
 

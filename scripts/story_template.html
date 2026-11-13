@@ -1,7 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tropics Scorecard</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
 /* Layout: one column of findings. Each finding is a claim in large type, the
@@ -240,7 +239,7 @@ footer p { max-width: none; }
         <span class="label">06 · How you judge</span>
         <h2>One matching choice moves the score more than switching models does.</h2>
         <div class="num" id="n5"></div>
-        <p>A station has to be paired with one cell of the model's grid. Take the cell it sits in, or the nearest cell the model treats as land? For ECMWF the land rule moves 53 of Singapore's 54 southern stations to a cell centred in Johor, in another country.</p>
+        <p>A station has to be paired with one cell of the model's grid. Take the cell it sits in, or the nearest cell the model treats as land? For ECMWF the land rule moves 73 of the 74 stations in the island's southern cells to a cell centred in Johor, in another country.</p>
         <p>I chose the cell the station sits in before seeing any score, and report the other as a check. A comparison that does not say which rule it used cannot be compared with anyone else's.</p>
         <p>Every comparison on this page is made the same way: a model and a baseline are scored only on the cases where both have a value, and the difference is taken day by day before the interval, so neither side gets an easier set of days.</p>
       </div>
@@ -482,10 +481,14 @@ function all() {
   const cells = (vars) => D.skill.filter((r) => vars.includes(r.v));
   const blue = (vars) => cells(vars).filter((r) => verdict(r) === "better").length;
   const days = (s) => Math.max(...D.skill.filter((r) => r.s === s).map((r) => r.d));
-  const aifsT = D.skill.filter((r) => r.s === "ecmwf_aifs025_single" && r.v === "temperature_2m" && r.l <= 3).every((r) => verdict(r) !== "worse");
+  // How many lead days, from day 1, AIFS temperature stays no worse than climatology.
+  const aifsRow = D.skill.filter((r) => r.s === "ecmwf_aifs025_single" && r.v === "temperature_2m").sort((a, b) => a.l - b.l);
+  const aifsOk = aifsRow.findIndex((r) => verdict(r) === "worse");
+  const aifsDays = aifsOk === -1 ? aifsRow.length : aifsOk;
+  const aifsT = aifsDays >= 2;
   const aifsR = D.skill.find((r) => r.s === "ecmwf_aifs025_single" && r.v === "rain_hourly" && r.l === 1);
   const tw = blue(["temperature_2m", "wind_speed_10m"]);
-  $("p1").textContent = `Read along a row and the colours hold at every lead time. Rain is blue in ${blue(["rain_hourly", "rain_6h"])} of ${cells(["rain_hourly", "rain_6h"]).length} cells. Temperature and wind are blue in ${tw === 0 ? "none" : tw} of ${cells(["temperature_2m", "wind_speed_10m"]).length}: no model is detectably better than climatology for them at any lead time, and for wind every model reads too windy.` + (aifsT ? ` ECMWF's AIFS, a learned model, comes closest for temperature: no worse than climatology over the first three days. It also cuts hourly rain error by about ${Math.round(-aifsR.p)} percent one day ahead, on its shorter archive.` : "");
+  $("p1").textContent = `Read along a row and the colours hold at every lead time. Rain is blue in ${blue(["rain_hourly", "rain_6h"])} of ${cells(["rain_hourly", "rain_6h"]).length} cells. Temperature and wind are blue in ${tw === 0 ? "none" : tw} of ${cells(["temperature_2m", "wind_speed_10m"]).length}: no model is detectably better than climatology for them at any lead time, and for wind every model reads too windy.` + (aifsT ? ` ECMWF's AIFS, a learned model, comes closest for temperature: no worse than climatology over the first ${["", "", "two", "three", "four", "five"][aifsDays] || aifsDays} lead days. It also cuts hourly rain error by about ${Math.round(-aifsR.p)} percent one day ahead, on its shorter archive.` : "");
   let view = "grid";
   const draw1 = () => {
     $("v-g").setAttribute("aria-pressed", String(view === "grid")); $("v-f").setAttribute("aria-pressed", String(view !== "grid"));
