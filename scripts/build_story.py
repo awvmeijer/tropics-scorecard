@@ -85,9 +85,24 @@ def main() -> None:
                & (flat.source == "gfs_global")]
     heavy = {"gfs_pod10": r4(pod.value.iloc[0])}
 
+    # Decision value (scorer.summary) and the ERA5 comparison (scorer.reanalysis), one day ahead
+    # except the ERA5-judged scorecard, which has every lead day.
+    de = pd.read_parquet(TABLES / "results" / "decision.parquet")
+    dec = [{"s": r.source, "w": r.window, "a": float(r.cost_loss_ratio), "v": r4(r.value), "lo": r4(r.low),
+            "hi": r4(r.high)} for r in de[de.lead == 1].itertuples()]
+    re_ = pd.read_parquet(TABLES / "results" / "reanalysis.parquet")
+    rea = [{"j": r.judge, "ref": r.reference, "s": r.source, "v": r.variable, "l": int(r.lead), "p": r4(r.percent),
+            "lo": r4(r.low), "hi": r4(r.high), "d": int(r.n_days)} for r in re_.itertuples()]
+    rb = pd.read_parquet(TABLES / "results" / "reanalysis_bias.parquet")
+    reb = [{"v": r.variable, "y": r4(r.value), "lo": r4(r.low), "hi": r4(r.high)} for r in rb.itertuples()]
+    rx = pd.read_parquet(TABLES / "results" / "reanalysis_extremes.parquet")
+    rex = [{"ref": r.reference, "q": float(r.q), "f": r4(r.forecast_q), "o": r4(r.observed_q), "r": r4(r.rqe),
+            "lo": r4(r.low), "hi": r4(r.high)} for r in rx.itertuples()]
+
     data = {"lead": lead, "versus": versus, "by_hour": by_hour, "cell_rule": cell_rule, "amount": amount,
             "map": {"view": VIEW, "rings": bm["rings"], "stations": stations, "cells": cells}, "cases": cases,
-            "counts": counts, "skill": skill, "ext": ext, "heavy": heavy}
+            "counts": counts, "skill": skill, "ext": ext, "heavy": heavy, "dec": dec, "rea": rea, "reb": reb,
+            "rex": rex}
     template = (ROOT / "scripts" / "story_template.html").read_text(encoding="utf-8")
     out = template.replace("/*DATA*/null", json.dumps(data, separators=(",", ":")))
     (ROOT / "dashboard" / "story.html").write_text(out, encoding="utf-8")

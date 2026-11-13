@@ -72,3 +72,55 @@ def block_bootstrap_ci_mean_diff(a, b, block_length, n_resamples=2000, alpha=0.0
         means.append(total / n)
     low, high = _interval(means, alpha)
     return sum(d) / n, low, high
+
+
+def block_bootstrap_ci_statistic(daily_rows, statistic, block_length, n_resamples=2000, alpha=0.05, seed=0):
+    """Moving-block bootstrap for a statistic of totals, such as a score from a contingency table.
+
+    daily_rows holds one tuple of numbers per day, in time order, all the same length (for
+    example the day's hits, misses, false alarms and correct negatives). Each resample draws
+    blocks of block_length consecutive days in the same way as block_bootstrap_ci_mean_diff,
+    adds up the chosen days' tuples, and applies statistic to the totals. A resample whose
+    statistic is None is skipped.
+    Returns (statistic of all the days, low, high), with low and high the alpha/2 and
+    1 - alpha/2 percentiles of the resampled values.
+    ValueError when daily_rows is empty, the tuples differ in length, block_length is outside
+    1 .. len(daily_rows), or the statistic of all the days or of every resample is None.
+    """
+    n = len(daily_rows)
+    if n == 0:
+        raise ValueError("empty input")
+    width = len(daily_rows[0])
+    if any(len(r) != width for r in daily_rows):
+        raise ValueError("rows differ in length")
+    if block_length < 1 or block_length > n:
+        raise ValueError("block_length must be between 1 and len(daily_rows)")
+    prefix = [[0.0] * (n + 1) for _ in range(width)]
+    for k in range(width):
+        p = prefix[k]
+        for i, r in enumerate(daily_rows):
+            p[i + 1] = p[i] + r[k]
+    point = statistic(tuple(prefix[k][n] for k in range(width)))
+    if point is None:
+        raise ValueError("the statistic of all the days is None")
+    starts = n - block_length + 1
+    full, rest = divmod(n, block_length)
+    rng = random.Random(seed)
+    values = []
+    for _ in range(n_resamples):
+        totals = [0.0] * width
+        for _ in range(full):
+            s = rng.randrange(starts)
+            for k in range(width):
+                totals[k] += prefix[k][s + block_length] - prefix[k][s]
+        if rest:
+            s = rng.randrange(starts)
+            for k in range(width):
+                totals[k] += prefix[k][s + rest] - prefix[k][s]
+        v = statistic(tuple(totals))
+        if v is not None:
+            values.append(v)
+    if not values:
+        raise ValueError("the statistic is None for every resample")
+    low, high = _interval(values, alpha)
+    return point, low, high

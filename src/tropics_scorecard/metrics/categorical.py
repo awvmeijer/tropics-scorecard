@@ -67,3 +67,34 @@ def ets(hits, misses, false_alarms, correct_negatives):
         return None
     hits_random = (hits + misses) * (hits + false_alarms) / n
     return _ratio(hits - hits_random, hits + misses + false_alarms - hits_random)
+
+
+def relative_economic_value(hits, misses, false_alarms, correct_negatives, cost_loss_ratio):
+    """How much of a perfect forecast's value a yes or no forecast keeps, for one user.
+
+    The user can pay a cost C to protect against a loss L that the event would cause, and
+    cost_loss_ratio is a = C / L, between 0 and 1 exclusive. With base rate s, hit rate H
+    and false alarm rate F = false_alarms / (false_alarms + correct_negatives), the mean
+    expense per case, in units of L, is
+        acting on the forecast   F a (1 - s) - H s (1 - a) + s
+        a perfect forecast       s a
+        the best fixed choice    min(a, s)   (always protect, or never)
+    and the value is (best fixed - forecast) / (best fixed - perfect): 1 for a perfect
+    forecast, 0 for no better than knowing only how often the event happens, negative when
+    acting on the forecast costs more than the best fixed choice.
+    None when the event never or always happened.
+    ValueError when cost_loss_ratio is not strictly between 0 and 1.
+    """
+    a = cost_loss_ratio
+    if not 0 < a < 1:
+        raise ValueError(f"cost_loss_ratio {a} is not strictly between 0 and 1")
+    n = hits + misses + false_alarms + correct_negatives
+    events = hits + misses
+    if n == 0 or events == 0 or events == n:
+        return None
+    s = events / n
+    h = hits / events
+    f = false_alarms / (false_alarms + correct_negatives)
+    fixed = min(a, s)
+    forecast = f * a * (1 - s) - h * s * (1 - a) + s
+    return (fixed - forecast) / (fixed - s * a)

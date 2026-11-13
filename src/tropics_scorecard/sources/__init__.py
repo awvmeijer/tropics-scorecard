@@ -47,6 +47,10 @@ def get_source(name: str, cfg: dict, cell_rule: str | None = None) -> ForecastSo
         return Persistence(cfg, mode="issue")
     if name == "climatology":
         return Climatology(cfg)
+    if name == "era5":
+        from .era5 import Era5
+
+        return Era5(cfg)
     return OpenMeteoModel(name, cfg, cell_rule or cfg["matching"]["cell_rule"])
 
 

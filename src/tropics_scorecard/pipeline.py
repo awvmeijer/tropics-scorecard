@@ -4,7 +4,7 @@
     python -m tropics_scorecard.pipeline score     # every score (needs the protocol signed off)
     python -m tropics_scorecard.pipeline all       # both
 
-Downloads are separate (ingest.datagovsg, ingest.isd, ingest.igra, ingest.openmeteo): this
+Downloads are separate (ingest.datagovsg, ingest.isd, ingest.igra, ingest.openmeteo, ingest.era5): this
 command never touches the network, so it is safe to rerun at any time.
 """
 from __future__ import annotations
@@ -63,6 +63,14 @@ def build(cfg: dict) -> None:
     openmeteo.main([])
     _done(t)
 
+    t = _step("ERA5 table")
+    from .ingest.era5 import FOLDER
+    from .sources import era5
+
+    if (FOLDER / "cells").exists():
+        era5.store()
+    _done(t)
+
     t = _step("dashboard data and case replays")
     export.main([])
     replay.main(["--all"])
@@ -71,15 +79,19 @@ def build(cfg: dict) -> None:
 
 def score(cfg: dict) -> None:
     from . import export
-    from .scorer import core, summary
+    from .scorer import core, reanalysis, summary
 
     t = _step("scoring")
     df = core.run_all(cfg)
     print(f"   {core.summary_numbers(df)}", flush=True)
     _done(t)
 
-    t = _step("scorecard and extremes tables")
+    t = _step("scorecard, extremes and decision tables")
     summary.main(cfg)
+    _done(t)
+
+    t = _step("ERA5: scored against the stations, and as a second judge")
+    reanalysis.main(cfg)
     _done(t)
     export.main([])
 

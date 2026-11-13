@@ -56,7 +56,23 @@ GFS is different at the very top. Its heaviest 0.1 percent is not detectably lig
 
 So the point-against-cell mismatch explains only a small part of the gap for heavy rain. Most of it is the models.
 
-I added sections 6 and 7 after the main scoring, and the protocol log says so. Both follow published methods. The two percentiles and the five-gauge minimum were picked during a first look at the numbers, so treat them as a check rather than a test fixed in advance.
+## 8. Acted on, the forecasts keep little of what a perfect one would save
+
+An error in millimetres does not say what a forecast is worth, so I scored a decision. Someone can protect against heavy rain at a cost, to avoid a bigger loss, and protects whenever the forecast says 10 mm or more. I compared what that costs them with the best fixed habit (always protect, or never) and with a perfect forecast. The share of the perfect forecast's saving they keep is the forecast's value.
+
+For 6-hour totals one day ahead, GFS keeps at most 13 percent (4 to 18), when protecting costs about 5 percent of the loss it avoids. ECMWF keeps at most 6 percent (minus 6 to 10), not detectably above zero. Persistence, assuming tomorrow repeats today, keeps 9 percent (0 to 11). GFS is worth anything only when protecting costs between 5 and 20 percent of the loss; outside that band, acting on it costs more than the best fixed habit. Hour by hour, with 10 mm in a single hour as the trigger, no forecast keeps more than 2 percent.
+
+## 9. Judge the same forecasts by the reanalysis, and the verdict changes
+
+ERA5 is the reanalysis most learned weather models are trained on and scored against. I added it two ways.
+
+First, scored against the stations like any forecast. ERA5 itself is 10 percent further from the thermometers than station climatology (6 to 13), and runs 0.6 degrees cool, even though thermometer readings went into it. For wind it is 104 percent further (94 to 115), reading 1.4 metres per second too windy. For 6-hour rain it is 13 percent closer than climatology (6 to 19), about what ECMWF's one-day forecast achieves. Its heaviest 0.1 percent of 6-hour totals is 52 mm against 67 mm in the gauges averaged over the same cell: too light, but much less so than the forecasts.
+
+Second, as the judge, on exactly the same station-hours, with an ERA5 climatology from the same years as the free guess. 31 of the 76 cells in the scorecard change colour. For temperature one day ahead, GFS's error is 6 percent lower than ECMWF's (3 to 9) against the instruments, and 40 percent higher (37 to 43) against ERA5: the order of the two models flips. ECMWF's AIFS, a learned model trained on ERA5 and then on ECMWF's own analyses, beats climatology for temperature at every lead day when ERA5 is the judge, and at none when the instruments are. The 9 km IFS, the finest model here, looks worst for temperature and wind against ERA5's 28 km cells, likely because a coarse judge penalises detail it cannot see.
+
+None of this makes ERA5 a poor product: it is a grid-cell estimate, which is what it is built to be. But a model trained and scored against it is being asked to match the grid, not the ground, and here the two disagree most for temperature and wind at the surface.
+
+I added sections 6 to 9 after the main scoring, and the protocol log says so. Both follow published methods. The two percentiles and the five-gauge minimum were picked during a first look at the numbers, so treat them as a check rather than a test fixed in advance.
 
 ## What the case studies add
 
