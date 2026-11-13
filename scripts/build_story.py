@@ -80,6 +80,13 @@ def main() -> None:
     out = template.replace("/*DATA*/null", json.dumps(data, separators=(",", ":")))
     (ROOT / "dashboard" / "story.html").write_text(out, encoding="utf-8")
     (ROOT / "docs" / "index.html").write_text(out, encoding="utf-8")  # served by GitHub Pages
+    # The hosted copy of the full dashboard, served by GitHub Pages next to the summary.
+    import shutil
+
+    site = ROOT / "docs" / "dashboard"
+    shutil.rmtree(site, ignore_errors=True)
+    shutil.copytree(ROOT / "dashboard", site, ignore=shutil.ignore_patterns("story.html"))
+    (ROOT / "docs" / ".nojekyll").write_text("")
     print("wrote dashboard/story.html", len(out) // 1024, "kB", counts)
 
 

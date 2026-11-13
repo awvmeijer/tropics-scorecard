@@ -1,7 +1,7 @@
 import {
   MAIN, METRICS, REGIMES, REGIME_SHORT, SCORED, SOURCES, VARIABLES, VIEWS, el, fmt, fmtInt, heatmap, legend, limitsPanel, lineChart, load,
   pick, rowsOf, stationMap, statusPanel, table,
-} from "./app.js?v=13";
+} from "./app.js?v=15";
 
 const page = document.body.dataset.page;
 const $ = (id) => document.getElementById(id);
@@ -317,7 +317,7 @@ async function casesPage() {
     if (st && bm) {
       const totals = Object.fromEntries(c.observed.rain_totals.map((r) => [r.station, r.mm]));
       const maxT = Math.max(1, ...Object.values(totals));
-      const ramp = ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"];
+      const ramp = [1, 2, 3, 4, 5, 6, 7].map((i) => `var(--r${i})`);
       const gauges = st.stations.filter((s) => totals[s.key] !== undefined);
       stationMap(mapHost, { basemap: bm, stations: gauges, cells: {}, model: "", rule: "", view: "island",
         colourBy: (s) => ramp[Math.min(ramp.length - 1, Math.floor((totals[s.key] / maxT) * ramp.length))] });

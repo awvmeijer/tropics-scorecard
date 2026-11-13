@@ -197,7 +197,7 @@ export function lineChart(host, { series, xs, xFormat = String, yFormat = (v) =>
     if (!connect) {
       const k = series.indexOf(s), off = (k - (series.length - 1) / 2) * 7;
       for (const p of banded) sv("line", { x1: X(p.x) + off, x2: X(p.x) + off, y1: Y(p.lo), y2: Y(p.hi), stroke: s.colour, "stroke-width": 2, "stroke-linecap": "round" }, svg);
-      for (const p of pts) sv("circle", { cx: X(p.x) + off, cy: Y(p.y), r: 4, fill: s.colour, stroke: "#fff", "stroke-width": 2 }, svg);
+      for (const p of pts) sv("circle", { cx: X(p.x) + off, cy: Y(p.y), r: 4, fill: s.colour, stroke: "var(--card)", "stroke-width": 2 }, svg);
       continue;
     }
     if (banded.length > 1) {
@@ -212,7 +212,7 @@ export function lineChart(host, { series, xs, xFormat = String, yFormat = (v) =>
       sv("path", { d: pts.map((p, i) => `${i ? "L" : "M"}${X(p.x)},${Y(p.y)}`).join(""), fill: "none", stroke: s.colour,
         "stroke-width": 2, "stroke-dasharray": s.dash || null, "stroke-linejoin": "round", "stroke-linecap": "round" }, svg);
     }
-    if (pts.length <= 8) for (const p of pts) sv("circle", { cx: X(p.x), cy: Y(p.y), r: 4, fill: s.colour, stroke: "#fff", "stroke-width": 2 }, svg);
+    if (pts.length <= 8) for (const p of pts) sv("circle", { cx: X(p.x), cy: Y(p.y), r: 4, fill: s.colour, stroke: "var(--card)", "stroke-width": 2 }, svg);
   }
   if (connect && directLabels && series.length <= 4) {
     const ends = series.map((s) => {
@@ -270,7 +270,7 @@ export function heatmap(host, { rows, cols, values, rowLabel = (r) => r, colLabe
   const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": head });
   host.append(svg);
   // Sequential, one hue light to dark. Empty months are the neutral surface.
-  const ramp = ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"];
+  const ramp = [1, 2, 3, 4, 5, 6, 7].map((i) => `var(--r${i})`);
   // Missing is the neutral surface; 0 percent usable is data, drawn as the first step with a red edge.
   const fill = (v) => (v === null || v === undefined ? "var(--none)" : ramp[Math.min(ramp.length - 1, Math.floor(v * ramp.length))]);
   cols.forEach((c, j) => {
@@ -319,7 +319,7 @@ export function stationMap(host, { basemap, stations, cells, cellSize, model, ru
   host.append(svg);
   const clipId = `clip-${Math.random().toString(36).slice(2)}`;
   sv("rect", { x: 0, y: 0, width: W, height: H }, sv("clipPath", { id: clipId }, sv("defs", {}, svg)));
-  sv("rect", { x: 0, y: 0, width: W, height: H, fill: "#fff", stroke: "var(--rule)" }, svg);
+  sv("rect", { x: 0, y: 0, width: W, height: H, fill: "var(--card)", stroke: "var(--rule)" }, svg);
   const body = sv("g", { "clip-path": `url(#${clipId})` }, svg);
   for (const ring of basemap.rings) {
     sv("path", { d: ring.map(([x, y], i) => `${i ? "L" : "M"}${X(x).toFixed(1)},${Y(y).toFixed(1)}`).join("") + "Z",
@@ -344,7 +344,7 @@ export function stationMap(host, { basemap, stations, cells, cellSize, model, ru
     const g = sv("g", { tabindex: 0 }, body);
     const fillC = colourBy ? colourBy(s) : "var(--ink)";
     // Coloured markers get a thin charcoal ring so the lightest steps stay visible on land.
-    const ring = colourBy ? { stroke: "var(--ink-2)", "stroke-width": 0.8 } : { stroke: "#fff", "stroke-width": 1.5 };
+    const ring = colourBy ? { stroke: "var(--ink-2)", "stroke-width": 0.8 } : { stroke: "var(--card)", "stroke-width": 1.5 };
     if (s.network === "isd") sv("rect", { x: X(s.lon) - 5, y: Y(s.lat) - 5, width: 10, height: 10, fill: fillC, ...ring }, g);
     else sv("circle", { cx: X(s.lon), cy: Y(s.lat), r: colourBy ? 5 : 4, fill: fillC, ...ring }, g);
     sv("circle", { cx: X(s.lon), cy: Y(s.lat), r: 12, fill: "transparent" }, g);
@@ -394,6 +394,10 @@ export function statusPanel(meta) {
   box.append(el("p", { class: "note", text: meta.scored
     ? "Every score below was computed after the verification protocol was fixed."
     : "Scoring waits for two things: the verification protocol to be fixed, and the metric functions that compute every score. The data is downloading meanwhile." }));
+  if (meta.scored) {  // the build progress only matters while something is still missing
+    box.append(el("p", { class: "note", text: `Data generated ${meta.generated.replace("T", " ").replace("+00:00", " UTC")}.` }));
+    return box;
+  }
   const grid = el("div", { class: "progress" });
   const add = (name, done, want) => {
     const pct = want ? Math.min(1, done / want) : 0;
