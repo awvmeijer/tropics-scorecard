@@ -17,9 +17,9 @@ variables:
   - temperature_2m
   - wind_speed_10m
 
-# Values marked "proposed" come from the draft in docs/verification_protocol.md and wait for
-# sign-off there. The scorer refuses to run while proposals_accepted is false.
-proposals_accepted: false
+# Values marked "proposed" were accepted on 2026-11-13 (docs/verification_protocol.md).
+# The scorer refuses to run while proposals_accepted is false.
+proposals_accepted: true    # signed off 2026-11-13, protocol change log
 
 rain_thresholds_mm_per_hour: [0.1, 1.0, 10.0]   # proposed, protocol section 4
 
