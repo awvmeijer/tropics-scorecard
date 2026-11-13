@@ -73,6 +73,8 @@ section.finding { border-top: 1px solid var(--rule); padding-block: 40px 44px; }
 .next { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); margin-top: 12px; }
 .next > div { border: 1px solid var(--edge); border-radius: 14px; padding: 16px; background: var(--card); min-width: 0; }
 .next p { font-size: 15px; color: var(--ink-2); margin: 0; }
+.next.four { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+.next p.big { font: 600 22px/1.25 var(--mono); color: var(--accent); margin: 2px 0 6px; font-variant-numeric: tabular-nums; }
 .limits { background: var(--card); border: 1px solid var(--edge); border-radius: 14px; padding: 20px; margin-block: 8px 40px; }
 .limits ul { margin: 8px 0 0; padding-left: 18px; }
 .limits li { margin: 5px 0; max-width: 70ch; }
@@ -180,9 +182,23 @@ footer p { max-width: none; }
   </section>
 
   <section class="finding">
+    <span class="label">06 · The instruments</span>
+    <h2>Before scoring a forecast, I had to trust the instruments.</h2>
+    <p>A model trained on raw observations sees every fault in them unless something catches it first. These are the ones the checks caught in 202 million readings. Each flag is logged with the check that raised it, and the main scores are computed both with and without the flagged data.</p>
+    <div class="next">
+      <div><h3>Stuck gauges</h3><p class="big">1,850 gauge-hours</p><p>A gauge read zero while the gauges within 10 km had a median of 5 mm or more: a blocked funnel or a dead logger.</p></div>
+      <div><h3>Frozen sensors</h3><p class="big">25,843 readings</p><p>Temperature and rain sensors repeating the same reading for an hour or more, caught as flatlines and removed.</p></div>
+      <div><h3>Clocks and siting</h3><p class="big">5 station-months</p><p>The warmest hour of the day fell at 10:00 or 18:00 instead of early afternoon: a shifted clock or a badly placed sensor.</p></div>
+      <div><h3>Different buckets</h3><p class="big">19 of 63 gauges</p><p>tip at 0.197 to 0.204 mm, not 0.2. The rain threshold sits at 0.1 mm so a single tip counts on every gauge.</p></div>
+      <div><h3>The feed itself</h3><p class="big">18,069 of 18,069</p><p>Before switching to a faster download endpoint, I compared it with the official one on a test day, reading by reading. Every shared rain reading matched.</p></div>
+      <div><h3>A check against the record</h3><p class="big">18 of 18 days</p><p>The gauge data alone found Singapore's 2024 dry spell on exactly the dates in the official record.</p></div>
+    </div>
+  </section>
+
+  <section class="finding">
     <div class="split">
       <div>
-        <span class="label">06 · Checking the data</span>
+        <span class="label">07 · The archive</span>
         <h2>Two of my first wins were faults in the archive.</h2>
         <div class="num" id="n6"></div>
         <p>On the first run, GFS rain looked better seven days ahead than one day ahead. That cannot be right, so I looked. Beyond 120 hours the archived GFS rain is a third of its day-one amount, and forecasting a third of the rain lowers the error. I removed those lead times and wrote down why, even though it deleted a result that looked good. The ECMWF time steps in section 02 were the second fault.</p>
@@ -197,7 +213,18 @@ footer p { max-width: none; }
   </section>
 
   <section class="finding">
-    <span class="label">07 · Next</span>
+    <span class="label">08 · The harness</span>
+    <h2>Built to be reused: any forecast plugs in the same way.</h2>
+    <div class="next four">
+      <div><h3>One interface</h3><p>Anything that forecasts answers the same question: these stations, these times, these lead times. Persistence, climatology and four operational models all use it, and a new model is one class.</p></div>
+      <div><h3>One scorer</h3><p>Every score, interval and comparison goes through one tested set of metric functions, so no two teams can compute "error" two different ways.</p></div>
+      <div><h3>Rules before results</h3><p>Matching, thresholds and baselines live in one config and a written protocol with a dated change log. The scorer refuses to run until the rules are signed off.</p></div>
+      <div><h3>One command</h3><p>One command rebuilds every table, score and chart from the raw downloads. Over 80 tests cover the metrics, matching and scorer.</p></div>
+    </div>
+  </section>
+
+  <section class="finding">
+    <span class="label">09 · Next</span>
     <h2>What this judge would test next.</h2>
     <div class="next">
       <div><h3>A model trained on observations</h3><p>Scored at the same points, against the same baselines and intervals, so it can sit directly beside the operational models here.</p></div>
@@ -339,7 +366,7 @@ function all() {
     const r = vs(rainVar, "ecmwf_ifs025"), c = by(rainVar, "climatology", 1).y;
     $("n2").replaceChildren(document.createTextNode(Math.round(-r.y / c * 100) + "% lower error"));
     small($("n2"), `ECMWF against climatology, one day ahead: ${f(-r.hi, 3)} to ${f(-r.lo, 3)} mm lower`);
-    $("cap2").textContent = (rainVar === "rain_hourly" ? "Mean absolute error of rain in the hour, in mm," : "Mean absolute error of the 6-hour rain total, in mm,") + " by how many days ahead the forecast was made. Lower is better. Shaded: 95 percent interval. GFS stops at day 3 because its archived rain is wrong beyond 120 hours (section 06)."; };
+    $("cap2").textContent = (rainVar === "rain_hourly" ? "Mean absolute error of rain in the hour, in mm," : "Mean absolute error of the 6-hour rain total, in mm,") + " by how many days ahead the forecast was made. Lower is better. Shaded: 95 percent interval. GFS stops at day 3 because its archived rain is wrong beyond 120 hours (section 07)."; };
   $("t-h").onclick = () => { rainVar = "rain_hourly"; $("t-h").setAttribute("aria-pressed", "true"); $("t-6").setAttribute("aria-pressed", "false"); draw2(); };
   $("t-6").onclick = () => { rainVar = "rain_6h"; $("t-6").setAttribute("aria-pressed", "true"); $("t-h").setAttribute("aria-pressed", "false"); draw2(); };
   draw2();
