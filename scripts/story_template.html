@@ -70,7 +70,7 @@ section.finding { border-top: 1px solid var(--rule); padding-block: 40px 44px; }
 .short ol { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 8px; }
 .short li { max-width: 80ch; }
 .short b { font-weight: 600; }
-.next { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); margin-top: 12px; }
+.next { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); margin-top: 12px; }
 .next > div { border: 1px solid var(--edge); border-radius: 14px; padding: 16px; background: var(--card); min-width: 0; }
 .next p { font-size: 15px; color: var(--ink-2); margin: 0; }
 .limits { background: var(--card); border: 1px solid var(--edge); border-radius: 14px; padding: 20px; margin-block: 8px 40px; }
@@ -200,10 +200,12 @@ footer p { max-width: none; }
     <span class="label">07 · Next</span>
     <h2>What this judge would test next.</h2>
     <div class="next">
-      <div><h3>A model trained on observations</h3><p>Scored at the same points, against the same baselines and the same intervals, so it can be compared directly with the operational models here.</p></div>
+      <div><h3>A model trained on observations</h3><p>Scored at the same points, against the same baselines and intervals, so it can sit directly beside the operational models here.</p></div>
+      <div><h3>Ensembles, scored as distributions</h3><p>Ensemble forecasts, such as GenCast's, scored at each station with the continuous ranked probability score and reliability diagrams. Both scores are already in the code.</p></div>
       <div><h3>Holdouts that have never been seen</h3><p>Whole stations and whole instruments held out, not only later dates, so nothing in the test has reached training in any form.</p></div>
-      <div><h3>Radar, with a fair score</h3><p>Rain fields scored with a neighbourhood score, so a storm forecast a few kilometres off is not punished twice.</p></div>
       <div><h3>Beyond the record</h3><p>Error tracked against how far an event exceeds anything in the training years, where learned models have been shown to struggle.</p></div>
+      <div><h3>Scored by the decision</h3><p>Not only how wrong a forecast is, but what it is worth for a choice such as postponing outdoor work, where a false alarm and a miss cost different amounts.</p></div>
+      <div><h3>Radar, with a fair score</h3><p>Rain fields scored with a neighbourhood score, so a storm forecast a few kilometres off is not punished twice.</p></div>
     </div>
   </section>
 
