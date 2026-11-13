@@ -6,6 +6,8 @@ This repository scores hourly rain, temperature and wind forecasts for Singapore
 
 Status: first full results, November 2026. Findings are in [docs/findings.md](docs/findings.md), case studies in [docs/cases/](docs/cases/), and what went wrong and why in [docs/failure_modes.md](docs/failure_modes.md).
 
+Start with the one-page summary, [dashboard/story.html](dashboard/story.html): five findings and three replayed events, each with its chart.
+
 ## Limits, first
 
 - A rain gauge measures one point. A forecast is an average over a grid cell 9 to 28 km wide, so it shows more light rain and less heavy rain than any gauge. Part of every low rain score comes from that mismatch.

@@ -1,0 +1,326 @@
+<meta charset="utf-8">
+<title>Tropics Scorecard</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one column of findings, each a claim in large type, the evidence as a chart
+   beside or under it, and the number that carries it in mono. One look, light, by choice:
+   charcoal on white, colour only on data. */
+:root {
+  --paper: #ffffff; --ink: #262626; --ink-2: #555555; --ink-3: #767676; --rule: #e4e4e4; --wash: #f6f6f4;
+  --land: #f0f0ed; --coast: #cfcfcb;
+  --gfs: #2a78d6; --ifs: #eb6834; --pers: #1baf7a; --clim: #b07a00; --obs: #262626;
+  --sans: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.55 var(--sans); }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+a { color: var(--ink); text-underline-offset: 3px; }
+.label { font: 500 11px/1.4 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); }
+h1 { font-size: clamp(34px, 6.4vw, 68px); line-height: 1.04; letter-spacing: -0.03em; font-weight: 600; margin: 14px 0 20px; text-wrap: balance; max-width: 15ch; }
+h2 { font-size: clamp(25px, 3.6vw, 38px); line-height: 1.12; letter-spacing: -0.02em; font-weight: 600; margin: 8px 0 14px; text-wrap: balance; }
+h3 { font-size: 18px; margin: 0 0 6px; font-weight: 600; }
+p { margin: 0 0 14px; max-width: 62ch; }
+.lede { font-size: clamp(18px, 2.2vw, 22px); color: var(--ink-2); max-width: 46ch; }
+header.top { padding-block: 44px 28px; }
+.hero { display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr); align-items: end; }
+@media (min-width: 860px) { .hero { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); } }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0; border-top: 1px solid var(--ink); margin-top: 28px; }
+.facts div { padding: 12px 12px 12px 0; border-bottom: 1px solid var(--rule); }
+.facts b { display: block; font: 600 22px/1.2 var(--mono); font-variant-numeric: tabular-nums; }
+section.finding { border-top: 1px solid var(--ink); padding-block: 36px 40px; }
+.split { display: grid; gap: 24px 40px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 860px) { .split { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); } }
+.split > * { min-width: 0; }
+.num { font: 600 clamp(30px, 4.4vw, 46px)/1.05 var(--mono); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; margin: 4px 0 2px; }
+.num small { font: 400 13px/1.4 var(--mono); color: var(--ink-2); letter-spacing: 0; display: block; margin-top: 6px; }
+.fig { border: 1px solid var(--rule); border-radius: 6px; padding: 14px; position: relative; }
+.fig svg { display: block; width: 100%; height: auto; overflow: visible; }
+.fig text { font: 11px var(--mono); fill: var(--ink-2); }
+.fig text.name { font: 500 12px var(--sans); fill: var(--ink); }
+.cap { font-size: 13.5px; color: var(--ink-2); margin: 10px 0 0; max-width: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; margin: 6px 0 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 20px; height: 0; border-top: 2.5px solid; display: inline-block; }
+.legend i.dash { border-top-style: dashed; }
+.tabs { display: inline-flex; border: 1px solid var(--ink); border-radius: 5px; overflow: hidden; margin: 0 0 10px; }
+.tabs button { font: 500 13px var(--sans); color: var(--ink); background: var(--paper); border: 0; padding: 7px 12px; cursor: pointer; min-height: 34px; }
+.tabs button + button { border-left: 1px solid var(--ink); }
+.tabs button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.tip { position: absolute; pointer-events: none; background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; padding: 7px 9px; font-size: 12.5px; line-height: 1.4; box-shadow: 0 4px 16px rgba(0,0,0,0.08); min-width: 150px; z-index: 3; }
+.tip b { font-family: var(--mono); }
+.tip .h { font: 500 11px var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); }
+.cases { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+.cases > div { min-width: 0; }
+.limits { background: var(--wash); border-radius: 6px; padding: 20px; margin-block: 8px 40px; }
+.limits ul { margin: 8px 0 0; padding-left: 18px; }
+.limits li { margin: 5px 0; max-width: 70ch; }
+footer { border-top: 1px solid var(--rule); color: var(--ink-2); font-size: 13px; padding-block: 18px 30px; }
+footer p { max-width: none; }
+@media (prefers-reduced-motion: no-preference) { .draw { stroke-dasharray: var(--len); stroke-dashoffset: 0; animation: draw 1.1s ease-out both; } @keyframes draw { from { stroke-dashoffset: var(--len); } } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="hero">
+      <div>
+        <span class="label">Tropics Scorecard · Singapore · Feb 2024 to Oct 2026</span>
+        <h1>How close was the forecast to what the instruments measured?</h1>
+        <p class="lede">I scored hourly rain, temperature and wind forecasts against Singapore's weather stations, not against a model's own analysis. Every comparison carries a 95 percent interval.</p>
+      </div>
+      <div class="fig" id="hero-map" aria-label="Map of stations"></div>
+    </div>
+    <div class="facts" id="facts"></div>
+  </header>
+
+  <section class="finding">
+    <div class="split">
+      <div>
+        <span class="label">Finding 1 · Rain</span>
+        <h2>The best forecast beats the free baselines, but only just.</h2>
+        <div class="num" id="n1"></div>
+        <p>ECMWF's forecast is closer to the gauges than "what usually happens at this hour, in this month" at every lead time out to seven days. GFS, one day ahead, is not detectably better than assuming tomorrow repeats today.</p>
+        <p>A forecast can be real and still be a small step up from something free.</p>
+      </div>
+      <div>
+        <div class="tabs" role="group" aria-label="Rain test"><button id="t-h" aria-pressed="true">Hour by hour</button><button id="t-6" aria-pressed="false">6-hour totals</button></div>
+        <div class="legend" id="lg1"></div>
+        <div class="fig" id="c1"></div>
+        <p class="cap" id="cap1"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="finding">
+    <div class="split">
+      <div>
+        <span class="label">Finding 2 · Temperature</span>
+        <h2>No model beats climatology at a weather station.</h2>
+        <div class="num" id="n2"></div>
+        <p>Both models run cool. ECMWF is at its worst between 9 in the morning and 3 in the afternoon. On its grid, the cell that holds most of Singapore is mostly sea, and sea does not heat up during the day the way a city does.</p>
+      </div>
+      <div>
+        <div class="legend" id="lg2"></div>
+        <div class="fig" id="c2"></div>
+        <p class="cap">Mean error (forecast minus station) by local hour, one day ahead, in °C. Zero would be no bias. Shaded: 95 percent interval. Climatology sits 0.3 °C low because the test period was warmer than 2017 to 2023.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="finding">
+    <div class="split">
+      <div>
+        <span class="label">Finding 3 · Wind</span>
+        <h2>Wind at a station is forecast worse than a guess from history.</h2>
+        <div class="num" id="n3"></div>
+        <p>Every model is further from the measured wind than climatology, and every model reads too windy. A grid cell 13 to 28 km wide, part of it open water, is being compared with a mast between buildings. They are not measuring the same thing, and anyone who needs the wind at that mast should know it.</p>
+      </div>
+      <div>
+        <div class="fig" id="c3"></div>
+        <p class="cap">Difference in mean absolute error against climatology on the same cases, one day ahead. Left of zero is better than climatology, right is worse. Bars are 95 percent intervals; an interval that crosses zero is no detectable difference.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="finding">
+    <div class="split">
+      <div>
+        <span class="label">Finding 4 · Matching</span>
+        <h2>Which grid cell you pick matters as much as which model you pick.</h2>
+        <div class="num" id="n4"></div>
+        <p>A station has to be paired with one cell of the model's grid. Take the cell it sits in, or the nearest cell the model treats as land? For ECMWF the land rule moves 53 of Singapore's 54 southern stations to a cell centred in Johor.</p>
+        <p>I chose the cell the station sits in before I saw any score, and report the other as a check.</p>
+      </div>
+      <div>
+        <div class="tabs" role="group" aria-label="Cell rule"><button id="m-n" aria-pressed="true">Cell the station sits in</button><button id="m-l" aria-pressed="false">Nearest land cell</button></div>
+        <div class="fig" id="c4"></div>
+        <p class="cap" id="cap4"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="finding">
+    <div class="split">
+      <div>
+        <span class="label">Finding 5 · Checking the data</span>
+        <h2>Two of my first results were faults in the archive, not skill.</h2>
+        <div class="num" id="n5"></div>
+        <p>On the first run, GFS rain looked better seven days ahead than one day ahead. That cannot be right, so I looked. Beyond 120 hours the archived GFS rain is a third of its day-one amount. Forecasting a third of the rain lowers the error. I removed those lead times and wrote down why, even though it deleted a result that looked good.</p>
+        <p>The second fault runs the other way: ECMWF's public rain comes in 3-hour and 6-hour steps, so I added the 6-hour test in finding 1.</p>
+      </div>
+      <div>
+        <div class="legend" id="lg5"></div>
+        <div class="fig" id="c5"></div>
+        <p class="cap">Mean forecast rain per hour over Singapore, by how far ahead the forecast was made. A model's average rain should not depend on lead time. ECMWF's holds steady. GFS drops by two thirds after day 3.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="finding">
+    <span class="label">Three events, replayed</span>
+    <h2>Where the forecasts held, and where they did not.</h2>
+    <p>Chosen from the gauge data and public reports before any forecast was looked at. Black is what the gauges measured, as a network mean per hour. Colour is what each model said one day ahead.</p>
+    <div class="legend" id="lg6"></div>
+    <div class="cases" id="cases"></div>
+  </section>
+
+  <div class="limits">
+    <span class="label">What I am not claiming</span>
+    <ul>
+      <li>A rain gauge is a point and a forecast is an average over a grid cell 9 to 28 km wide. Part of every low score is that mismatch.</li>
+      <li>The test is under three years, so each monsoon season appears two or three times.</li>
+      <li>The forecasts come from a public archive, and two faults were found in it. There may be others.</li>
+      <li>This is one region and one set of archives. It is not a ranking of models.</li>
+    </ul>
+  </div>
+</div>
+<footer><div class="wrap">
+  <p>Method: the rules were written down before any forecast was scored. Baselines are persistence (the observation 24 hours earlier) and climatology (station, month and hour, 2017 to 2023). Intervals: moving-block bootstrap over days, 8-day blocks, 2000 resamples, on paired differences.</p>
+  <p>Observations: Meteorological Service Singapore via data.gov.sg (Singapore Open Data Licence); NOAA Integrated Surface Database and Integrated Global Radiosonde Archive. Forecasts: <a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a> (CC BY 4.0), one grid cell per station, unchanged. Coastline: Natural Earth.</p>
+</div></footer>
+
+<script>
+const D = /*DATA*/null;
+const NS = "http://www.w3.org/2000/svg";
+const SRC = { gfs_global: ["GFS", "var(--gfs)"], ecmwf_ifs025: ["ECMWF IFS 0.25°", "var(--ifs)"], persistence: ["Persistence", "var(--pers)", true], climatology: ["Climatology", "var(--clim)", true],
+  ecmwf_aifs025_single: ["ECMWF AIFS 0.25°", "var(--ink-2)"], ecmwf_ifs: ["ECMWF IFS 9 km", "var(--ink-2)"], obs: ["Gauges", "var(--obs)"] };
+const $ = (id) => document.getElementById(id);
+const f = (v, d = 2) => { const s = Number(v).toFixed(d); return /^-0\.?0*$/.test(s) ? s.slice(1) : s; };
+function sv(tag, a, parent) { const n = document.createElementNS(NS, tag); for (const k in a) if (a[k] != null) n.setAttribute(k, a[k]); if (parent) parent.append(n); return n; }
+function legend(host, ids) { host.replaceChildren(); for (const id of ids) { const s = document.createElement("span"); const i = document.createElement("i"); i.style.borderTopColor = SRC[id][1]; if (SRC[id][2]) i.className = "dash"; s.append(i, document.createTextNode(SRC[id][0])); host.append(s); } }
+function ticks(lo, hi, n = 5) { const raw = (hi - lo) / n, p = 10 ** Math.floor(Math.log10(raw)); const st = [1, 2, 2.5, 5, 10].map((m) => m * p).find((s) => s >= raw); const o = []; for (let t = Math.ceil(lo / st) * st; t <= hi + st * 1e-9; t += st) o.push(+t.toFixed(10)); return o; }
+
+// series: [{id, pts:[{x,y,lo,hi}]}]; xs ordered values
+function lines(host, series, xs, o = {}) {
+  host.querySelectorAll("svg,.tip").forEach((n) => n.remove());
+  const W = Math.max(300, host.clientWidth - 28), H = Math.round(Math.min(o.h || 320, Math.max(210, W * 0.6)));
+  const m = { t: 10, r: o.names === false ? 12 : Math.min(128, W * 0.3), b: 30, l: 46 };
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": o.label || "chart" }, host);
+  const all = series.flatMap((s) => s.pts.flatMap((p) => [p.y, p.lo, p.hi])).filter((v) => v != null);
+  let lo = Math.min(...all), hi = Math.max(...all); if (o.zero) { lo = Math.min(lo, 0); hi = Math.max(hi, 0); }
+  const pad = (hi - lo) * 0.08 || 1; lo -= pad; hi += pad;
+  const X = (x) => m.l + (xs.indexOf(x) / (xs.length - 1)) * (W - m.l - m.r), Y = (v) => m.t + (1 - (v - lo) / (hi - lo)) * (H - m.t - m.b);
+  for (const t of ticks(lo, hi)) { sv("line", { x1: m.l, x2: W - m.r, y1: Y(t), y2: Y(t), stroke: "var(--rule)" }, svg); sv("text", { x: m.l - 7, y: Y(t) + 4, "text-anchor": "end" }, svg).textContent = (o.yf || f)(t); }
+  if (o.zero) sv("line", { x1: m.l, x2: W - m.r, y1: Y(0), y2: Y(0), stroke: "var(--ink-3)" }, svg);
+  const step = Math.ceil(xs.length / Math.max(2, Math.floor((W - m.l - m.r) / (o.xw || 56))));
+  xs.forEach((x, i) => { if (i % step === 0) sv("text", { x: X(x), y: H - 9, "text-anchor": "middle" }, svg).textContent = (o.xf || String)(x); });
+  const ends = [];
+  for (const s of series) {
+    const [name, col, dash] = SRC[s.id]; const pts = s.pts.filter((p) => p.y != null && xs.includes(p.x));
+    const band = pts.filter((p) => p.lo != null);
+    if (band.length > 1) sv("path", { d: band.map((p, i) => `${i ? "L" : "M"}${X(p.x)},${Y(p.hi)}`).join("") + band.slice().reverse().map((p) => `L${X(p.x)},${Y(p.lo)}`).join("") + "Z", fill: col, "fill-opacity": 0.12 }, svg);
+    if (!pts.length) continue;
+    const path = sv("path", { d: pts.map((p, i) => `${i ? "L" : "M"}${X(p.x).toFixed(1)},${Y(p.y).toFixed(1)}`).join(""), fill: "none", stroke: col, "stroke-width": s.id === "obs" ? 1.6 : 2, "stroke-dasharray": dash ? "6 4" : null, "stroke-linejoin": "round" }, svg);
+    if (!dash && o.draw) { path.style.setProperty("--len", path.getTotalLength()); path.classList.add("draw"); }
+    if (pts.length <= 8) for (const p of pts) sv("circle", { cx: X(p.x), cy: Y(p.y), r: 3.5, fill: col, stroke: "var(--paper)", "stroke-width": 1.5 }, svg);
+    ends.push({ name, y: Y(pts[pts.length - 1].y), x: X(pts[pts.length - 1].x) });
+  }
+  if (o.names !== false) { ends.sort((a, b) => a.y - b.y); for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 14) ends[i].y = ends[i - 1].y + 14; for (const e of ends) sv("text", { x: e.x + 9, y: e.y + 4, class: "name" }, svg).textContent = e.name; }
+  const hair = sv("line", { y1: m.t, y2: H - m.b, stroke: "var(--ink)", "stroke-dasharray": "2 3", visibility: "hidden" }, svg);
+  const tip = document.createElement("div"); tip.className = "tip"; tip.hidden = true; host.append(tip);
+  const hit = sv("rect", { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: "transparent", tabindex: 0 }, svg);
+  let k = 0;
+  const show = (x) => { hair.setAttribute("x1", X(x)); hair.setAttribute("x2", X(x)); hair.setAttribute("visibility", "visible"); tip.replaceChildren();
+    const h = document.createElement("div"); h.className = "h"; h.textContent = (o.xl || o.xf || String)(x); tip.append(h);
+    for (const s of series) { const p = s.pts.find((q) => q.x === x); if (!p || p.y == null) continue; const r = document.createElement("div"); const b = document.createElement("b"); b.textContent = (o.yf || f)(p.y) + (p.lo != null ? ` (${(o.yf || f)(p.lo)} to ${(o.yf || f)(p.hi)})` : ""); r.append(b, document.createTextNode(" " + SRC[s.id][0])); tip.append(r); }
+    tip.hidden = false; const bx = svg.getBoundingClientRect(); const left = 14 + (X(x) / W) * bx.width + 12; tip.style.left = Math.max(0, Math.min(left, host.clientWidth - tip.offsetWidth - 4)) + "px"; tip.style.top = "18px"; };
+  const hide = () => { hair.setAttribute("visibility", "hidden"); tip.hidden = true; };
+  hit.addEventListener("pointermove", (e) => { const b = svg.getBoundingClientRect(), sx = ((e.clientX - b.left) / b.width) * W; let best = xs[0], d = 1e9; for (const x of xs) { const dd = Math.abs(X(x) - sx); if (dd < d) { d = dd; best = x; } } k = xs.indexOf(best); show(best); });
+  hit.addEventListener("pointerleave", hide); hit.addEventListener("focus", () => show(xs[k])); hit.addEventListener("blur", hide);
+  hit.addEventListener("keydown", (e) => { if (e.key === "ArrowRight") k = Math.min(xs.length - 1, k + 1); else if (e.key === "ArrowLeft") k = Math.max(0, k - 1); else return; e.preventDefault(); show(xs[k]); });
+}
+
+// interval plot: rows with a dot and a bar around zero
+function forest(host, groups) {
+  host.replaceChildren();
+  const rows = groups.flatMap((g) => g.rows.map((r) => ({ ...r, g: g.title })));
+  const W = Math.max(300, host.clientWidth - 28), rh = 26, m = { t: 8, r: 16, b: 28, l: Math.min(150, W * 0.38) };
+  const H = m.t + m.b + rows.length * rh + groups.length * 24;
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Difference against climatology" }, host);
+  const vals = rows.flatMap((r) => [r.lo, r.hi]).concat([0]); let lo = Math.min(...vals), hi = Math.max(...vals); const pad = (hi - lo) * 0.08; lo -= pad; hi += pad;
+  const X = (v) => m.l + ((v - lo) / (hi - lo)) * (W - m.l - m.r);
+  for (const t of ticks(lo, hi, 5)) { sv("line", { x1: X(t), x2: X(t), y1: m.t, y2: H - m.b, stroke: "var(--rule)" }, svg); sv("text", { x: X(t), y: H - 9, "text-anchor": "middle" }, svg).textContent = f(t, 1); }
+  sv("line", { x1: X(0), x2: X(0), y1: m.t, y2: H - m.b, stroke: "var(--ink)" }, svg);
+  let y = m.t, last = null;
+  for (const r of rows) {
+    if (r.g !== last) { y += 24; sv("text", { x: 0, y: y - 6, class: "name", style: "font-weight:600" }, svg).textContent = r.g; last = r.g; }
+    const cy = y + rh / 2, col = (SRC[r.s] || ["", "var(--ink-2)"])[1];
+    sv("text", { x: m.l - 10, y: cy + 4, "text-anchor": "end", class: "name" }, svg).textContent = (SRC[r.s] || [r.s])[0];
+    sv("line", { x1: X(r.lo), x2: X(r.hi), y1: cy, y2: cy, stroke: col, "stroke-width": 3, "stroke-linecap": "round" }, svg);
+    sv("circle", { cx: X(r.y), cy, r: 5, fill: col, stroke: "var(--paper)", "stroke-width": 2 }, svg);
+    const t = sv("title", {}, svg.lastChild); t.textContent = `${f(r.y, 3)} (${f(r.lo, 3)} to ${f(r.hi, 3)})`;
+    y += rh;
+  }
+}
+
+function map(host, rule, small) {
+  host.replaceChildren();
+  const M = D.map, b = M.view, kx = Math.cos(1.33 * Math.PI / 180), W = 640, H = Math.round(W * (b.north - b.south) / ((b.east - b.west) * kx));
+  const X = (lon) => (lon - b.west) / (b.east - b.west) * W, Y = (lat) => (b.north - lat) / (b.north - b.south) * H;
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Stations and the forecast grid cells they are paired with" }, host);
+  const id = "cl" + Math.random().toString(36).slice(2); sv("rect", { width: W, height: H }, sv("clipPath", { id }, sv("defs", {}, svg)));
+  const g = sv("g", { "clip-path": `url(#${id})` }, svg);
+  sv("rect", { width: W, height: H, fill: "var(--paper)" }, g);
+  for (const r of M.rings) sv("path", { d: r.map(([x, y], i) => `${i ? "L" : "M"}${X(x).toFixed(1)},${Y(y).toFixed(1)}`).join("") + "Z", fill: "var(--land)", stroke: "var(--coast)", "stroke-width": 0.8 }, g);
+  const cells = M.cells[rule], used = new Map();
+  for (const s of M.stations) { const c = cells[s.k]; if (c) used.set(c.join(), c); }
+  for (const [, [la, lo]] of used) { sv("rect", { x: X(lo - 0.125), y: Y(la + 0.125), width: X(lo + 0.125) - X(lo - 0.125), height: Y(la - 0.125) - Y(la + 0.125), fill: "none", stroke: "var(--ink-3)", "stroke-dasharray": "4 3" }, g); }
+  if (!small) for (const s of M.stations) { const c = cells[s.k]; if (c) sv("line", { x1: X(s.lon), y1: Y(s.lat), x2: X(c[1]), y2: Y(c[0]), stroke: "var(--ifs)", "stroke-width": 0.8, opacity: 0.75 }, g); }
+  if (!small) for (const [, [la, lo]] of used) sv("circle", { cx: X(lo), cy: Y(la), r: 4.5, fill: "var(--ifs)", stroke: "var(--paper)", "stroke-width": 1.5 }, g);
+  for (const s of M.stations) { if (s.isd) sv("rect", { x: X(s.lon) - 4, y: Y(s.lat) - 4, width: 8, height: 8, fill: "var(--ink)", stroke: "var(--paper)", "stroke-width": 1.2 }, g); else sv("circle", { cx: X(s.lon), cy: Y(s.lat), r: 3.6, fill: "var(--ink)", stroke: "var(--paper)", "stroke-width": 1.2 }, g); }
+  sv("rect", { x: 0.5, y: 0.5, width: W - 1, height: H - 1, fill: "none", stroke: "var(--rule)" }, svg);
+}
+
+function all() {
+  const L = D.lead, by = (v, s, x) => L[v][s].find((p) => p.x === x);
+  for (const id of ["n2", "n3", "n4", "n5"]) $(id).replaceChildren();
+  // facts
+  const n = D.counts, facts = [[D.map.stations.length + " stations", "rain gauges, weather stations and airports, 2017 to 2026"], [(n.rain_hourly / 1e6).toFixed(1) + " million", "hourly rain comparisons per model"], ["4 models", "GFS, ECMWF IFS at two resolutions, ECMWF AIFS"], ["2 baselines", "persistence and climatology, scored like a model"]];
+  $("facts").replaceChildren(...facts.map(([b, t]) => { const d = document.createElement("div"); const e = document.createElement("b"); e.textContent = b; const s = document.createElement("span"); s.className = "label"; s.textContent = t; d.append(e, s); return d; }));
+  map($("hero-map"), "nearest", true);
+  // 1
+  const vs = (v, s) => D.versus[v].find((r) => r.s === s);
+  let rainVar = "rain_hourly";
+  const draw1 = () => { const ids = ["gfs_global", "ecmwf_ifs025", "persistence", "climatology"]; legend($("lg1"), ids);
+    lines($("c1"), ids.map((id) => ({ id, pts: L[rainVar][id] || [] })), [1, 2, 3, 5, 7], { xf: (d) => "Day " + d, zero: false, draw: true, label: "Rain error by lead time" });
+    const r = vs(rainVar, "ecmwf_ifs025"), c = by(rainVar, "climatology", 1).y;
+    $("n1").innerHTML = ""; $("n1").append(document.createTextNode(Math.round(-r.y / c * 100) + "% lower error")); const sm = document.createElement("small"); sm.textContent = `ECMWF against climatology, one day ahead: ${f(-r.hi, 3)} to ${f(-r.lo, 3)} mm lower`; $("n1").append(sm);
+    $("cap1").textContent = (rainVar === "rain_hourly" ? "Mean absolute error of rain in the hour, in mm," : "Mean absolute error of the 6-hour rain total, in mm,") + " by how many days ahead the forecast was made. Lower is better. Shaded: 95 percent interval. GFS stops at day 3 because its archived rain is wrong beyond 120 hours (finding 5)."; };
+  $("t-h").onclick = () => { rainVar = "rain_hourly"; $("t-h").setAttribute("aria-pressed", "true"); $("t-6").setAttribute("aria-pressed", "false"); draw1(); };
+  $("t-6").onclick = () => { rainVar = "rain_6h"; $("t-6").setAttribute("aria-pressed", "true"); $("t-h").setAttribute("aria-pressed", "false"); draw1(); };
+  draw1();
+  // 2
+  const ids2 = ["gfs_global", "ecmwf_ifs025", "climatology"]; legend($("lg2"), ids2);
+  lines($("c2"), ids2.map((id) => ({ id, pts: D.by_hour.temperature_2m_bias[id] })), [...Array(24).keys()], { xf: (h) => String(h).padStart(2, "0") + ":00", zero: true, names: false, label: "Temperature bias by hour" });
+  const t2 = vs("temperature_2m", "ecmwf_ifs025"), g2 = vs("temperature_2m", "gfs_global");
+  $("n2").append(document.createTextNode(`+${f(g2.y)} to +${f(t2.y)} °C`)); { const sm = document.createElement("small"); sm.textContent = `extra error against climatology: GFS ${f(g2.lo)} to ${f(g2.hi)}, ECMWF ${f(t2.lo)} to ${f(t2.hi)}`; $("n2").append(sm); }
+  // 3
+  const order = ["gfs_global", "ecmwf_ifs025", "ecmwf_aifs025_single", "ecmwf_ifs"];
+  const grp = (v, title) => ({ title, rows: order.map((s) => vs(v, s)).filter(Boolean) });
+  forest($("c3"), [grp("wind_speed_10m", "Wind speed, m/s"), grp("temperature_2m", "Temperature, °C"), grp("rain_hourly", "Hourly rain, mm")]);
+  const w = D.versus.wind_speed_10m.map((r) => r.y); $("n3").append(document.createTextNode(`+${f(Math.min(...w), 1)} to +${f(Math.max(...w), 1)} m/s`)); { const sm = document.createElement("small"); sm.textContent = "extra error against climatology, across the four models"; $("n3").append(sm); }
+  // 4
+  const cr = D.cell_rule; $("n4").append(document.createTextNode(`${f(cr.temperature_2m.y)} °C`)); { const sm = document.createElement("small"); sm.textContent = `worse for temperature under the land rule (${f(cr.temperature_2m.lo)} to ${f(cr.temperature_2m.hi)}); wind ${f(-cr.wind_speed_10m.y)} m/s better`; $("n4").append(sm); }
+  const draw4 = (rule) => { map($("c4"), rule); $("m-n").setAttribute("aria-pressed", rule === "nearest"); $("m-l").setAttribute("aria-pressed", rule === "land");
+    $("cap4").textContent = rule === "nearest" ? "Each station (black) joined to the centre of the ECMWF 0.25° cell it sits in (orange). Dashed squares are the cells. Most of the island falls in one cell centred over the southern coast." : "Under the land rule, almost every station is joined to a cell centred in Johor, across the strait. Same stations, same model, different forecast."; };
+  $("m-n").onclick = () => draw4("nearest"); $("m-l").onclick = () => draw4("land"); draw4("nearest");
+  // 5
+  legend($("lg5"), ["gfs_global", "ecmwf_ifs025"]);
+  lines($("c5"), ["gfs_global", "ecmwf_ifs025"].map((id) => ({ id, pts: D.amount[id] })), [1, 2, 3, 5, 7], { xf: (d) => "Day " + d, zero: true, label: "Mean forecast rain by lead" });
+  const a = D.amount.gfs_global; $("n5").append(document.createTextNode(`${f(a[0].y)} → ${f(a[a.length - 1].y)} mm/h`)); { const sm = document.createElement("small"); sm.textContent = "GFS mean rain over Singapore, day 1 against day 7"; $("n5").append(sm); }
+  // cases
+  legend($("lg6"), ["obs", "gfs_global", "ecmwf_ifs025"]);
+  const notes = { surge_2025_03: "Both models warned of it days ahead. The amount was another matter: 268 mm fell, GFS said 207, ECMWF 121.", squall_2024_09_17: "31 of 62 gauges took 10 mm or more in one hour. No forecast had it, at any lead time.", dry_2024_07: "1.6 mm fell in 18 days. GFS forecast 81 mm, with showers on most afternoons that never came." };
+  $("cases").replaceChildren();
+  for (const [id, c] of Object.entries(D.cases)) {
+    const box = document.createElement("div"); const h = document.createElement("h3"); h.textContent = c.title; const fig = document.createElement("div"); fig.className = "fig"; const p = document.createElement("p"); p.className = "cap"; p.textContent = notes[id]; box.append(h, fig, p); $("cases").append(box);
+    const ser = ["gfs_global", "ecmwf_ifs025", "obs"].map((s) => ({ id: s, pts: c.t.map((t, i) => ({ x: t, y: c[s][i] })) }));
+    lines(fig, ser, c.t, { names: false, h: 230, xw: 86, xf: (t) => t.slice(8, 10) + "/" + t.slice(5, 7), xl: (t) => t.slice(5).replace("-", "/"), yf: (v) => f(v, 1), label: c.title });
+  }
+}
+all();
+let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(all, 200); });
+</script>
