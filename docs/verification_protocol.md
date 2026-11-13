@@ -139,3 +139,4 @@ Write the limits here before seeing results. Prompts to answer in your own words
 | 2026-11-11 | First draft with proposals | Written before any forecast was scored |
 | 2026-11-11 | Proposal 3.1 changed from the land rule to the nearest cell | Mapping the cells showed the land rule pairs stations south of 1.375 N with cells in Johor that do not contain them. No forecast had been scored |
 | 2026-11-13 | Decisions 1 to 9 accepted as drafted | Sign-off by the author; no forecast had been scored |
+| 2026-11-13 | Bootstrap block length fixed at 8 days | First lag below 0.1 in the autocorrelation of daily persistence-minus-climatology MAE at lead day 1: rain 3 days, temperature 7, wind 8. The largest is used for all variables. No model forecast was read (`scripts/fix_block_length.py`) |

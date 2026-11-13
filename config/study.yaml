@@ -60,7 +60,7 @@ secondary_forecast_sources:
 
 bootstrap:
   unit: day                                     # proposed, protocol section 7: daily series
-  block_length_days: TODO                       # fixed from baseline errors before any model is scored
+  block_length_days: 8                          # fixed 2026-11-13 from baseline errors, scripts/fix_block_length.py
   resamples: 2000
   alpha: 0.05
   seed: 0
