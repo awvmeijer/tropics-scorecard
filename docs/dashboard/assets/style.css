@@ -1,27 +1,26 @@
-/* Tropics Scorecard. Near-black with a blue glow and dark cards; a light version follows
-   the viewer's colour scheme. Blue is the only accent; other colour is for data. */
+/* Tropics Scorecard. White ground with a faint blue glow, rounded cards, near-black text.
+   One light look by choice. Blue is the only accent; other colour is for data. */
 :root {
-  --ink: #ffffff; --ink-2: #a3a3a3; --ink-3: #6e6e6e; --rule: #2c2c2c; --rule-2: #1c1c1c; --paper: #030303; --card: #101010;
-  --land: #161616; --coast: #333333; --none: #1a1a1a; --accent: #1e9bff; --glow: rgba(0,105,190,.24); --glow-2: rgba(0,80,150,.07);
+  --ink: #0a0a0a; --ink-2: #5e5e5e; --ink-3: #8f8f8f; --rule: #d9d9d9; --rule-2: #f1f1f1; --paper: #ffffff; --card: #ffffff;
+  --land: #f1f1f1; --coast: #cfcfcf; --none: #f1f1f1; --accent: #0a78d6; --glow: rgba(0,120,215,.10); --glow-2: rgba(0,120,215,.03);
   /* Categorical slots, fixed order, assigned per entity in app.js. */
-  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
-  /* Sequential ramp, low to high: on dark the low end recedes into the surface. */
-  --r1: #0d366b; --r2: #184f95; --r3: #256abf; --r4: #3987e5; --r5: #6da7ec; --r6: #9ec5f4; --r7: #cde2fb;
-  --shadow: rgba(0, 0, 0, 0.4);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #b07a00; --s5: #e87ba4; --s6: #008300; --s7: #6250d6; --s8: #e34948;
+  /* Sequential ramp, low to high. */
+  --r1: #cde2fb; --r2: #9ec5f4; --r3: #6da7ec; --r4: #3987e5; --r5: #256abf; --r6: #184f95; --r7: #0d366b;
+  --shadow: rgba(0, 0, 0, 0.08);
   --sans: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --ink: #ffffff; --ink-2: #a3a3a3; --ink-3: #6e6e6e; --rule: #2c2c2c; --rule-2: #1c1c1c; --paper: #030303; --card: #101010;
+  --land: #161616; --coast: #333333; --none: #1a1a1a; --accent: #1e9bff; --glow: rgba(0,105,190,.24); --glow-2: rgba(0,80,150,.07);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+  --r1: #0d366b; --r2: #184f95; --r3: #256abf; --r4: #3987e5; --r5: #6da7ec; --r6: #9ec5f4; --r7: #cde2fb;
+  --shadow: rgba(0, 0, 0, 0.4);
   color-scheme: dark;
 }
-@media (prefers-color-scheme: light) {
-  :root {
-    --ink: #0a0a0a; --ink-2: #5e5e5e; --ink-3: #8f8f8f; --rule: #d9d9d9; --rule-2: #f1f1f1; --paper: #ffffff; --card: #ffffff;
-    --land: #f1f1f1; --coast: #cfcfcf; --none: #f0efec; --accent: #0a78d6; --glow: rgba(0,120,215,.10); --glow-2: rgba(0,120,215,.03);
-    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #b07a00; --s5: #e87ba4; --s6: #008300; --s7: #6250d6; --s8: #e34948;
-    --r1: #cde2fb; --r2: #9ec5f4; --r3: #6da7ec; --r4: #3987e5; --r5: #256abf; --r6: #184f95; --r7: #0d366b;
-    --shadow: rgba(0, 0, 0, 0.08);
-    color-scheme: light;
-  }
-}
+.theme-toggle { margin-left: auto; }
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }

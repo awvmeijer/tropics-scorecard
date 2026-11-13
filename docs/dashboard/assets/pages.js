@@ -1,7 +1,7 @@
 import {
   MAIN, METRICS, REGIMES, REGIME_SHORT, SCORED, SOURCES, VARIABLES, VIEWS, el, fmt, fmtInt, heatmap, legend, limitsPanel, lineChart, load,
   pick, rowsOf, stationMap, statusPanel, table,
-} from "./app.js?v=15";
+} from "./app.js?v=17";
 
 const page = document.body.dataset.page;
 const $ = (id) => document.getElementById(id);
@@ -329,6 +329,19 @@ async function casesPage() {
 }
 
 // ------------------------------------------------------------------ boot
+
+// Light by default; the switch in the header sets data-theme on the root and is remembered.
+(function themeSwitch() {
+  const root = document.documentElement, bar = document.querySelector("header.site .wrap");
+  if (!bar) return;
+  const btn = el("button", { class: "theme-toggle", type: "button" });
+  const set = (t) => { root.setAttribute("data-theme", t); btn.textContent = t === "dark" ? "Light mode" : "Dark mode"; btn.setAttribute("aria-pressed", String(t === "dark")); };
+  let saved = null;
+  try { saved = localStorage.getItem("tropics-theme"); } catch (e) { saved = null; }
+  set(saved === "dark" || saved === "light" ? saved : "light");
+  btn.addEventListener("click", () => { const t = root.getAttribute("data-theme") === "dark" ? "light" : "dark"; set(t); try { localStorage.setItem("tropics-theme", t); } catch (e) { /* not saved */ } });
+  bar.append(btn);
+})();
 
 const pages = { scorecard, strata, stations, observations: observationsPage, cases: casesPage };
 const footLimits = document.getElementById("limits");
