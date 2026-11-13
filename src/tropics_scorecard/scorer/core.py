@@ -248,6 +248,15 @@ def comparisons_for(cfg: dict, lead_kind: str) -> list[tuple[str, str]]:
     return out
 
 
+def excluded(cfg: dict, source: str, variable: str, lead_kind: str, lead: int) -> bool:
+    """True when config lists this source, variable and lead as a known archive fault."""
+    for e in cfg.get("exclusions") or []:
+        if (e["source"] == source and e["variable"] == variable and e["lead_kind"] == lead_kind
+                and int(lead) in [int(x) for x in e["leads"]]):
+            return True
+    return False
+
+
 def job(cfg: dict, variable: str, lead_kind: str, lead: int, qc: str) -> list[dict]:
     """Everything for one variable, lead time and quality-control variant."""
     drop = qc == "flags_removed"
@@ -259,6 +268,8 @@ def job(cfg: dict, variable: str, lead_kind: str, lead: int, qc: str) -> list[di
     meta = {"variable": variable, "lead_kind": lead_kind, "lead": int(lead), "qc": qc}
     pairs, rows = {}, []
     for name in sources_for(cfg, lead_kind):
+        if excluded(cfg, name, variable, lead_kind, lead):
+            continue
         src = get_source(name, cfg)
         if hasattr(src, "drop_flagged"):
             src.drop_flagged = drop

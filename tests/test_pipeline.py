@@ -287,3 +287,11 @@ def test_single_runs_cached_twice_are_kept_once(tmp_path, monkeypatch):
             json.dump([loc], fh)
     df = pd.read_parquet(om_store.build_single("m"))
     assert len(df) == 1 and df["lead_hours"].tolist() == [1]
+
+
+def test_exclusions_match_source_variable_and_lead():
+    c = cfg(exclusions=[{"source": "m", "variable": "rain_hourly", "lead_kind": "day", "leads": [5, 7], "reason": "x"}])
+    assert core.excluded(c, "m", "rain_hourly", "day", 7)
+    assert not core.excluded(c, "m", "rain_hourly", "day", 3)
+    assert not core.excluded(c, "m", "temperature_2m", "day", 7)
+    assert not core.excluded(cfg(), "m", "rain_hourly", "day", 7)

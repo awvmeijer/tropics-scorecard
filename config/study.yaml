@@ -91,3 +91,11 @@ quality_control:
   timezone:                    # local hour of the mean daily temperature maximum
     expected_local_hour_of_max: {min: 11, max: 17}
   isd_bad_quality_codes: ["2", "3", "6", "7"]
+
+# Forecast values left out because the archive itself is wrong there, not the model.
+# Each entry is explained in docs/failure_modes.md and the protocol change log.
+exclusions:
+  - {source: gfs_global, variable: rain_hourly, lead_kind: day, leads: [5, 7],
+     reason: "archived GFS rain beyond 120 hours averages a third of its day-1 amount with the same share of wet hours"}
+  - {source: gfs_global, variable: rain_hourly, lead_kind: hour, leads: [121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168],
+     reason: "same fault, seen in whole runs beyond hour 120"}

@@ -410,6 +410,7 @@ export function statusPanel(meta) {
 
 export const LIMITS = [
   "A rain gauge measures one point. A forecast is an average over a grid cell 9 to 28 km wide, so a forecast shows more light rain and less heavy rain than any gauge. Part of every low rain score comes from that mismatch, not from the forecast.",
+  "Hourly rain is an unfair test for ECMWF IFS 0.25° and AIFS: their public output has 3-hour and 6-hour steps, filled evenly across the hours between. GFS rain beyond 120 hours is left out because the archived values are wrong.",
   "Stations have errors. Tipping-bucket gauges catch less rain than falls in strong wind and very heavy rain, and no correction is applied.",
   "The test period is under three years: each monsoon phase appears two or three times. Differences smaller than their interval are reported as no detectable difference.",
   "Models with a shorter archive are scored on their own period and never pooled with the main table.",

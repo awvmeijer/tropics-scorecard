@@ -242,6 +242,13 @@ def scores() -> Path:
     if not path.exists():
         return _write("scores.json", {"rows": [], "columns": []})
     df = pd.read_parquet(path)
+    # Per-station rows are only shown for MAE at lead day 1; the rest stay in the parquet.
+    df = df[(df["station"] == "all") | ((df["metric"] == "mae") & (df["lead_kind"] == "day") & (df["lead"] == 1))]
+    # Hour-by-hour leads: single scores only, and counts are dropped. Values to 4 figures.
+    hourly = df["lead_kind"] == "hour"
+    df = df[~hourly | (df["against"].isna() & ~df["metric"].isin(["observed_events", "forecast_events"]))]
+    for c in ("value", "low", "high"):
+        df[c] = df[c].astype(float).round(4)
     cols = list(df.columns)
     rows = [[_clean(v) for v in r] for r in df.itertuples(index=False, name=None)]
     return _write("scores.json", {"columns": cols, "rows": rows})

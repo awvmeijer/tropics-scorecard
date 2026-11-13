@@ -1,7 +1,7 @@
 import {
   MAIN, METRICS, REGIMES, REGIME_SHORT, SOURCES, VARIABLES, VIEWS, el, fmt, fmtInt, heatmap, legend, limitsPanel, lineChart, load,
   pick, rowsOf, stationMap, statusPanel, table,
-} from "./app.js?v=10";
+} from "./app.js?v=11";
 
 const page = document.body.dataset.page;
 const $ = (id) => document.getElementById(id);
