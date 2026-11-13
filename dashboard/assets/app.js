@@ -19,6 +19,9 @@ export const VARIABLES = {
   temperature_2m: { label: "Temperature at 2 m", unit: "°C" },
   wind_speed_10m: { label: "Wind speed at 10 m", unit: "m/s" },
 };
+// Variables with scores: the three observed ones plus the 6-hour rain total.
+export const SCORED = { rain_hourly: VARIABLES.rain_hourly, rain_6h: { label: "Rain in 6 hours", unit: "mm" },
+  temperature_2m: VARIABLES.temperature_2m, wind_speed_10m: VARIABLES.wind_speed_10m };
 export const METRICS = {
   mae: { label: "Mean absolute error", short: "MAE", lower: true },
   rmse: { label: "Root mean square error", short: "RMSE", lower: true },

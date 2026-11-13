@@ -2,17 +2,15 @@
 
 Written before any scoring. Changed only with a dated note at the bottom saying what changed and why.
 
-**Status: decisions 1 to 9 accepted by the author on 13 November 2026, before any forecast was scored.** Lines marked ACCEPTED were proposals in the draft of 11 November. Still open: sections 1 and 8 (the author's own words), and the bootstrap block length, which is fixed from baseline errors before any model is scored (section 7).
+**Status: decisions 1 to 9 accepted by the author on 13 November 2026, before any forecast was scored.** Lines marked ACCEPTED were proposals in the draft of 11 November. Sections 1 and 8 are drafts for the author to review.
 
 ## 1. The decisions these scores should inform
 
-Who would use this forecast, and for what? Write two or three concrete decisions. Each metric below must trace back to one of them.
+Draft for the author to review, 13 November 2026.
 
-Suggestions to replace or keep, not decisions:
-
-- Whether to schedule outdoor work or events for an afternoon one to three days ahead. Needs: rain occurrence by hour of day, at day-level lead times.
-- Whether a heavy-rain hour (10 mm or more) is likely tomorrow, for drainage or flood readiness. Needs: hits and false alarms above 10 mm in an hour.
-- Whether a forecast is worth using at all at a given lead time, against free baselines. Needs: the lead time at which each forecast stops beating persistence and climatology.
+1. **Should outdoor work or an event go ahead this afternoon, one to three days from now?** Needs rain occurrence and amount by hour of day at lead days 1 to 3. Scores: hourly rain MAE and the contingency scores at 0.1 and 1 mm, split by local hour.
+2. **Is a downpour likely tomorrow, enough to prepare drains or move equipment?** Needs hits and false alarms at 10 mm in an hour. Scores: probability of detection and false alarm ratio at 10 mm, with the number of observed events beside them.
+3. **Is a forecast worth using at all at this lead time, against what is free?** Needs the lead time at which each forecast stops beating persistence and climatology. Scores: the paired difference in MAE against each baseline, with its interval, at each lead.
 
 ## 2. Reference
 
@@ -125,12 +123,14 @@ ACCEPTED: fixed calendar dates for every year, with the March boundary on the 15
 
 ## 8. What this protocol cannot tell you
 
-Write the limits here before seeing results. Prompts to answer in your own words:
+Draft for the author to review, 13 November 2026.
 
-- What does a gauge-to-cell comparison say about a forecast for an area, and what does it not?
-- How long is the test period in years, and how many of each monsoon phase does it hold?
-- Which forecasts are scored on a shorter period, and why their numbers are not pooled with the main table.
-- What the archive does and does not let us say about lead times shorter than one day before April 2026.
+- It compares a point with a grid cell. A low score can mean a poor forecast or a station that its cell does not represent, and this protocol cannot separate the two. It says nothing about how good a forecast is for an area.
+- The test period is two years and nine months. It holds three Northeast Monsoons in part, three first inter-monsoons, three Southwest Monsoons and two second inter-monsoons with part of a third. One unusual season moves a seasonal score.
+- ECMWF AIFS is scored from 24 February 2025 and ECMWF IFS 9 km from 7 October 2025. Their numbers are never pooled with the main table and should not be ranked against it.
+- Before April 2026 only day-level lead times exist. Nothing here speaks to forecasts for the next few hours before that date.
+- The forecasts come from a public archive, not from the centres themselves. Two archive faults were found (change log). Others may exist that these checks did not catch.
+- Rain is scored hour by hour and in 6-hour totals. Models whose public output has 3-hour or 6-hour steps are only fairly tested by the second.
 
 ## Change log
 
@@ -141,3 +141,5 @@ Write the limits here before seeing results. Prompts to answer in your own words
 | 2026-11-13 | Decisions 1 to 9 accepted as drafted | Sign-off by the author; no forecast had been scored |
 | 2026-11-13 | Bootstrap block length fixed at 8 days | First lag below 0.1 in the autocorrelation of daily persistence-minus-climatology MAE at lead day 1: rain 3 days, temperature 7, wind 8. The largest is used for all variables. No model forecast was read (`scripts/fix_block_length.py`) |
 | 2026-11-13 | GFS rain at lead days 5 and 7 excluded from scoring | Found on the first scoring run: the archived values average a third of the day-1 amount with the same share of wet hours, an archive fault (docs/failure_modes.md). Keeping them would have shown GFS improving with lead time. This change was made after seeing scores, and removes a result that looked good |
+| 2026-11-13 | Added a second rain test: 6-hour totals ending 00, 06, 12 and 18 UTC, bias, MAE and RMSE only | The first scoring run showed ECMWF IFS 0.25 and AIFS rain in the archive has 3-hour and 6-hour steps, so the hourly test is not fair to them. Added after seeing scores; the hourly results stay as they were |
+| 2026-11-13 | Sections 1 and 8 drafted | Drafts for the author to review and reword |

@@ -257,15 +257,36 @@ def excluded(cfg: dict, source: str, variable: str, lead_kind: str, lead: int) -
     return False
 
 
+SIX_HOUR = "rain_6h"
+
+
+def six_hour_totals(p: pd.DataFrame, cfg: dict) -> pd.DataFrame:
+    """Hourly rain pairs summed to 6-hour totals ending 00, 06, 12 and 18 UTC.
+
+    A window counts only when all six hours have both a forecast and an observation.
+    Sums of forecast and observed are plain additions of matched values, not a metric.
+    """
+    if p.empty:
+        return p
+    end = p["valid_time"].dt.ceil("6h")
+    g = p.assign(valid_time=end).groupby(["station_key", "valid_time"], sort=False)
+    out = g.agg(forecast=("forecast", "sum"), observed=("observed", "sum"), n=("observed", "size")).reset_index()
+    out = out[out["n"] == 6].drop(columns="n")
+    out = out.assign(lead_kind=p["lead_kind"].iloc[0], lead=int(p["lead"].iloc[0]))
+    return annotate(out, cfg).reset_index(drop=True)
+
+
 def job(cfg: dict, variable: str, lead_kind: str, lead: int, qc: str) -> list[dict]:
     """Everything for one variable, lead time and quality-control variant."""
     drop = qc == "flags_removed"
-    thresholds = tuple(cfg["rain_thresholds_mm_per_hour"]) if variable == "rain_hourly" else ()
+    six = variable == SIX_HOUR
+    label, variable = variable, ("rain_hourly" if six else variable)
+    thresholds = tuple(cfg["rain_thresholds_mm_per_hour"]) if variable == "rain_hourly" and not six else ()
     full = drop and lead_kind == "day"
     groups = ("all", "hour_local", "regime", "station") if full else ("all",)
     cmp_groups = ("all", "hour_local", "regime") if full else ("all",)
     cases = cases_for(cfg, variable, lead_kind, lead, drop_flagged=drop)
-    meta = {"variable": variable, "lead_kind": lead_kind, "lead": int(lead), "qc": qc}
+    meta = {"variable": label, "lead_kind": lead_kind, "lead": int(lead), "qc": qc}
     pairs, rows = {}, []
     for name in sources_for(cfg, lead_kind):
         if excluded(cfg, name, variable, lead_kind, lead):
@@ -275,6 +296,8 @@ def job(cfg: dict, variable: str, lead_kind: str, lead: int, qc: str) -> list[di
             src.drop_flagged = drop
         try:
             pairs[name] = make_pairs(src, variable, cases, thresholds)
+            if six:
+                pairs[name] = six_hour_totals(pairs[name], cfg)
         except LookupError as err:  # a forecast table that is not built yet
             print(f"skip {name}: {err}", flush=True)
             continue
@@ -296,6 +319,8 @@ def job(cfg: dict, variable: str, lead_kind: str, lead: int, qc: str) -> list[di
             alt = get_source(m, cfg, cell_rule=rule)
             try:
                 pa = make_pairs(alt, variable, cases, thresholds)
+                if six:
+                    pa = six_hour_totals(pa, cfg)
             except LookupError:
                 continue
             rows += score_pairs(pa, {**meta, "source": alt.name}, cfg, ("all",), metrics=("bias", "mae"),
@@ -315,6 +340,8 @@ def jobs(cfg: dict, variables=VARIABLES) -> list[tuple]:
             out += [(cfg, v, "day", int(d), "flags_removed"), (cfg, v, "day", int(d), "flags_kept")]
         for h in range(1, int(cfg["lead_times"]["hours"]["max"]) + 1):
             out.append((cfg, v, "hour", h, "flags_removed"))
+    if "rain_hourly" in variables:  # 6-hour totals, protocol section 4 (added 2026-11-13)
+        out += [(cfg, SIX_HOUR, "day", int(d), "flags_removed") for d in cfg["lead_times"]["days"]]
     return out
 
 

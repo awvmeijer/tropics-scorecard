@@ -295,3 +295,14 @@ def test_exclusions_match_source_variable_and_lead():
     assert not core.excluded(c, "m", "rain_hourly", "day", 3)
     assert not core.excluded(c, "m", "temperature_2m", "day", 7)
     assert not core.excluded(cfg(), "m", "rain_hourly", "day", 7)
+
+
+def test_six_hour_totals_need_all_six_hours():
+    c = core.cases_for(cfg(), "rain_hourly", "day", 1, reference=reference(days=2, stations=("dgs:S1",)))
+    p = core.make_pairs(Constant("x", 0.5), "rain_hourly", c, ())
+    p = p[p["valid_time"] != pd.Timestamp("2024-03-01T08:00Z")]  # break the window ending 12:00
+    out = core.six_hour_totals(p, cfg())
+    ends = set(out["valid_time"])
+    assert pd.Timestamp("2024-03-01T12:00Z") not in ends and pd.Timestamp("2024-03-01T18:00Z") in ends
+    assert set(out["forecast"]) == {3.0} and set(out["observed"]) == {6.0}
+    assert set(out["valid_time"].dt.hour) <= {0, 6, 12, 18}

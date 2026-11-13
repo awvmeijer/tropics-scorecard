@@ -1,14 +1,14 @@
 import {
-  MAIN, METRICS, REGIMES, REGIME_SHORT, SOURCES, VARIABLES, VIEWS, el, fmt, fmtInt, heatmap, legend, limitsPanel, lineChart, load,
+  MAIN, METRICS, REGIMES, REGIME_SHORT, SCORED, SOURCES, VARIABLES, VIEWS, el, fmt, fmtInt, heatmap, legend, limitsPanel, lineChart, load,
   pick, rowsOf, stationMap, statusPanel, table,
-} from "./app.js?v=11";
+} from "./app.js?v=13";
 
 const page = document.body.dataset.page;
 const $ = (id) => document.getElementById(id);
 const colour = (id) => `var(--s${(SOURCES[id] || { slot: 6 }).slot})`;
 const name = (id) => (SOURCES[id] ? SOURCES[id].label : id);
-const varLabel = (v) => VARIABLES[v].label;
-const unit = (v, metric) => (["brier", "ets", "pod", "far", "csi"].includes(metric) ? "" : ` (${VARIABLES[v].unit})`);
+const varLabel = (v) => SCORED[v].label;
+const unit = (v, metric) => (["brier", "ets", "pod", "far", "csi"].includes(metric) ? "" : ` (${SCORED[v].unit})`);
 
 function select(id, labelText, options, value) {
   const s = el("select", { id });
@@ -55,7 +55,7 @@ async function scorecard() {
     const isRainEvent = ["brier", "ets", "pod", "far", "csi"].includes(state.metric);
     if (isRainEvent && state.variable !== "rain_hourly") state.metric = "mae";
     controls.replaceChildren(
-      select("v", "Variable", Object.entries(VARIABLES).map(([k, v]) => [k, v.label]), state.variable),
+      select("v", "Variable", Object.entries(SCORED).map(([k, v]) => [k, v.label]), state.variable),
       select("m", "Score", Object.entries(METRICS).filter(([k]) => state.variable === "rain_hourly" || !["brier", "ets", "pod", "far", "csi"].includes(k)).map(([k, v]) => [k, v.label]), state.metric),
       ...(["brier", "ets", "pod", "far", "csi"].includes(state.metric) ? [select("t", "Rain in the hour at least", meta.rain_thresholds_mm_per_hour.map((t) => [t, `${t} mm`]), state.threshold)] : []),
     );
@@ -123,7 +123,7 @@ async function strata() {
   const state = { variable: "rain_hourly", metric: "mae", lead: 1 };
   const draw = () => {
     $("controls").replaceChildren(
-      select("v", "Variable", Object.entries(VARIABLES).map(([k, v]) => [k, v.label]), state.variable),
+      select("v", "Variable", Object.entries(SCORED).map(([k, v]) => [k, v.label]), state.variable),
       select("m", "Score", [["mae", METRICS.mae.label], ["bias", METRICS.bias.label], ["rmse", METRICS.rmse.label]], state.metric),
       select("d", "Lead time", (meta.lead_days || [1, 2, 3, 5, 7]).map((d) => [d, `Day ${d}`]), state.lead),
     );
@@ -296,11 +296,12 @@ async function casesPage() {
     lineChart(wc, { series: [{ id: "wet", label: "Gauges wet", colour: "var(--ink)", points: rain.map((r) => ({ x: r.t, y: r.wet, n: r.n })) }], xs, xFormat: fmtT, yFormat: (v) => fmt(v, 0), directLabels: false });
     if (c.forecasts_included && c.forecasts.rain_hourly) {
       const fc = el("div");
-      host.append(el("section", { class: "card", style: "margin-top:20px" }, el("span", { class: "label", text: "Forecast network-mean rain by lead day, against the gauges" }), fc));
+      host.append(el("section", { class: "card", style: "margin-top:20px" }, el("span", { class: "label", text: "Forecast network-mean rain against the gauges (mm in the hour). Solid: lead day 1, dashed: day 3" }),
+        legend(["obs", "gfs_global", "ecmwf_ifs025"], { colour: (k) => (k === "obs" ? "var(--ink)" : colour(k)), label: (k) => (k === "obs" ? "Gauges" : name(k)), dash: () => null }), fc));
       const ser = [{ id: "obs", label: "Gauges", colour: "var(--ink)", points: rain.map((r) => ({ x: r.t, y: r.mean })) }];
       for (const [src, leads] of Object.entries(c.forecasts.rain_hourly)) {
         if (!["gfs_global", "ecmwf_ifs025"].includes(src)) continue;
-        for (const [lead, pts] of Object.entries(leads)) ser.push({ id: `${src}-${lead}`, label: `${name(src)}, day ${lead}`, colour: colour(src), dash: lead === "1" ? null : lead === "3" ? "6 4" : "2 3", points: pts.map((p) => ({ x: p.t, y: p.mean })) });
+        for (const [lead, pts] of Object.entries(leads)) if (lead !== "5") ser.push({ id: `${src}-${lead}`, label: `${name(src)}, day ${lead}`, colour: colour(src), dash: lead === "1" ? null : lead === "3" ? "6 4" : "2 3", points: pts.map((p) => ({ x: p.t, y: p.mean })) });
       }
       lineChart(fc, { series: ser, xs, xFormat: fmtT, directLabels: false });
     } else {

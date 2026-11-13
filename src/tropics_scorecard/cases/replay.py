@@ -188,7 +188,8 @@ def main(argv=None) -> int:
     ids = list(load_cases()) if args.all else [args.case]
     for cid in ids:
         print(replay(cid, cfg).relative_to(ROOT), flush=True)
-    index = [{"id": k, "title": v["title"], "kind": v.get("kind")} for k, v in load_cases().items()]
+    chosen = yaml.safe_load(CASES.read_text(encoding="utf-8")).get("chosen") or list(load_cases())
+    index = [{"id": k, "title": v["title"], "kind": v.get("kind")} for k, v in load_cases().items() if k in chosen]
     (OUT / "index.json").write_text(json.dumps(index), encoding="utf-8")
     return 0
 

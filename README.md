@@ -4,13 +4,14 @@ How close was the forecast to what the instruments measured, and how sure are we
 
 This repository scores hourly rain, temperature and wind forecasts for Singapore and the area around it against station observations, not against a reanalysis. Every comparison carries a 95 percent interval.
 
-Status: work in progress. The observation pipeline, the matching, the baselines and the scorer are built. Scores are published once the verification protocol is fixed.
+Status: first full results, November 2026. Findings are in [docs/findings.md](docs/findings.md), case studies in [docs/cases/](docs/cases/), and what went wrong and why in [docs/failure_modes.md](docs/failure_modes.md).
 
 ## Limits, first
 
 - A rain gauge measures one point. A forecast is an average over a grid cell 9 to 28 km wide, so it shows more light rain and less heavy rain than any gauge. Part of every low rain score comes from that mismatch.
 - Stations have errors. Tipping-bucket gauges catch less rain than falls in strong wind and very heavy rain. No correction is applied.
 - The test period is under three years (February 2024 to October 2026), so each monsoon phase appears two or three times.
+- Two of the models publish rain in 3-hour or 6-hour steps, so hourly rain is not a fair test for them. Rain is also scored as 6-hour totals.
 - This is one region and one set of public archives. It is not a benchmark of record.
 
 ## What is scored

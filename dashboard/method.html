@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="assets/style.css?v=11">
+  <link rel="stylesheet" href="assets/style.css?v=13">
 </head>
 <body data-page="method">
   <header class="site">
@@ -34,6 +34,8 @@
         <dt>Forecasts</dt><dd>GFS and ECMWF IFS 0.25° from the Open-Meteo Previous Runs archive, lead days 1, 2, 3, 5 and 7; whole runs from April 2026.</dd>
         <dt>Baselines</dt><dd>Persistence (the observation 24N hours earlier) and climatology (station, month and local hour, 2017 to 2023).</dd>
         <dt>Matching</dt><dd>One grid cell per station, raw model values, no interpolation. Rain summed from 5-minute gauge totals to the hour; an hour counts only when complete.</dd>
+        <dt>Rain, two ways</dt><dd>Hour by hour, and as 6-hour totals. Two of the models publish rain in 3-hour or 6-hour steps, so only the 6-hour test is fair to them.</dd>
+        <dt>Left out</dt><dd>GFS rain beyond 120 hours: the archived values are wrong there (a third of the day-1 amount).</dd>
         <dt>Intervals</dt><dd>Moving-block bootstrap over days, on paired differences between two forecasts on the same cases. 2000 resamples, 95 percent.</dd>
       </dl>
       <p class="note" style="margin-top:16px">The full protocol, with the evidence behind each choice and a dated change log, is in the repository: docs/verification_protocol.md.</p>
@@ -45,6 +47,6 @@
       <p>Observations: Meteorological Service Singapore via <a href="https://data.gov.sg">data.gov.sg</a> (Singapore Open Data Licence), NOAA Integrated Surface Database and Integrated Global Radiosonde Archive. Forecasts: <a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a> (CC BY 4.0), regridded to stations by nearest cell, no other changes. Coastline: Natural Earth.</p>
     </div>
   </footer>
-  <script type="module" src="assets/pages.js?v=11"></script>
+  <script type="module" src="assets/pages.js?v=13"></script>
 </body>
 </html>
