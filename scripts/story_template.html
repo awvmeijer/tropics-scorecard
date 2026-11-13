@@ -64,6 +64,15 @@ section.finding { border-top: 1px solid var(--rule); padding-block: 40px 44px; }
 .tip .h { font: 500 11px var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); }
 .cases { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
 .cases > div { min-width: 0; }
+@media (max-width: 640px) { .theme { position: static; display: block; margin: 0 0 18px auto; } header.top { padding-top: 20px; } }
+.byline { font-size: 14px; color: var(--ink-2); margin-top: 6px; }
+.short { margin-top: 24px; padding: 18px 20px; border: 1px solid var(--accent); border-radius: 14px; background: var(--card); }
+.short ol { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 8px; }
+.short li { max-width: 80ch; }
+.short b { font-weight: 600; }
+.next { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); margin-top: 12px; }
+.next > div { border: 1px solid var(--edge); border-radius: 14px; padding: 16px; background: var(--card); min-width: 0; }
+.next p { font-size: 15px; color: var(--ink-2); margin: 0; }
 .limits { background: var(--card); border: 1px solid var(--edge); border-radius: 14px; padding: 20px; margin-block: 8px 40px; }
 .limits ul { margin: 8px 0 0; padding-left: 18px; }
 .limits li { margin: 5px 0; max-width: 70ch; }
@@ -79,28 +88,34 @@ footer p { max-width: none; }
       <div>
         <span class="label">Tropics Scorecard · Singapore · Feb 2024 to Oct 2026</span>
         <h1>How close was the forecast to what the instruments measured?</h1>
-        <p class="lede">I scored hourly rain, temperature and wind forecasts against Singapore's weather stations, not against a model's own analysis. Every comparison carries a 95 percent interval.</p>
+        <p class="lede">If a weather model is meant to learn from observations, it should be judged on them too. This is a small, working version of that judge: GFS and ECMWF forecasts scored against rain gauges, weather stations and airports around Singapore, with simple baselines and a 95 percent interval on every comparison.</p>
+        <p class="byline">Anthony Meijer · November 2026 · <a href="https://github.com/awvmeijer/tropics-scorecard">Code</a> · <a href="https://awvmeijer.github.io/tropics-scorecard/dashboard/">Full dashboard</a></p>
       </div>
-      <div class="fig" id="hero-map" aria-label="Map of stations"></div>
+      <div class="fig" id="hero-map" aria-label="Map of the stations around Singapore"></div>
     </div>
     <div class="facts" id="facts"></div>
-    <p class="cap" style="margin-top:16px"><a href="https://awvmeijer.github.io/tropics-scorecard/dashboard/">Open the full dashboard</a> for every lead time, hour, season and station, or <a href="https://github.com/awvmeijer/tropics-scorecard">read the code</a>.</p>
+    <div class="short">
+      <span class="label">In short</span>
+      <ol>
+        <li><b>At the surface in the tropics, operational forecasts barely beat a free guess.</b> No model is detectably better than climatology for temperature or wind at a station. For rain, ECMWF gains about 12 percent.</li>
+        <li><b>The events that matter most are where they miss.</b> A squall line put 10 mm in an hour on half the island's gauges, and no forecast had it at any lead time.</li>
+        <li><b>The judge needs as much care as the model.</b> One matching choice moves a score as much as switching models, and two of my first "wins" were faults in the forecast archive.</li>
+      </ol>
+    </div>
   </header>
 
   <section class="finding">
     <div class="split">
       <div>
-        <span class="label">01 · Rain</span>
-        <h2>The best forecast beats the free baselines, but only just.</h2>
+        <span class="label">01 · The gap at the surface</span>
+        <h2>Against the instruments, the forecasts barely beat a free guess.</h2>
         <div class="num" id="n1"></div>
-        <p>ECMWF's forecast is closer to the gauges than "what usually happens at this hour, in this month" at every lead time out to seven days. GFS, one day ahead, is not detectably better than assuming tomorrow repeats today.</p>
-        <p>A forecast can be real and still be a small step up from something free.</p>
+        <p>Climatology is the forecast you get for free: what usually happens at this station, in this month, at this hour. For temperature, no model is detectably better than it, and three of the four are worse. For wind, all four are worse, and all read too windy. Only rain shows a real gain.</p>
+        <p>Part of this is a point being compared with a grid cell 9 to 28 km wide, part of it sea. That is the point: the gap between what a model says about a cell and what an instrument measures on the ground is real, measurable, and the space a model trained on the observations themselves would have to close.</p>
       </div>
       <div>
-        <div class="tabs" role="group" aria-label="Rain test"><button id="t-h" aria-pressed="true">Hour by hour</button><button id="t-6" aria-pressed="false">6-hour totals</button></div>
-        <div class="legend" id="lg1"></div>
         <div class="fig" id="c1"></div>
-        <p class="cap" id="cap1"></p>
+        <p class="cap">Difference in mean absolute error against climatology on the same cases, one day ahead. Left of zero is better than climatology, right is worse. Bars are 95 percent intervals; a bar that crosses zero is no detectable difference.</p>
       </div>
     </div>
   </section>
@@ -108,47 +123,58 @@ footer p { max-width: none; }
   <section class="finding">
     <div class="split">
       <div>
-        <span class="label">02 · Temperature</span>
-        <h2>No model beats climatology at a weather station.</h2>
+        <span class="label">02 · Rain</span>
+        <h2>For rain the gain is real and holds out to seven days. It is also small.</h2>
         <div class="num" id="n2"></div>
-        <p>Both models run cool. ECMWF is at its worst between 9 in the morning and 3 in the afternoon. On its grid, the cell that holds most of Singapore is mostly sea, and sea does not heat up during the day the way a city does.</p>
+        <p>ECMWF's rain is closer to the gauges than climatology at every lead time out to a week. GFS, one day ahead, is not detectably better than assuming tomorrow repeats today.</p>
+        <p>ECMWF publishes rain in 3-hour and 6-hour steps, so an hour-by-hour test is unfair to it. Switch to 6-hour totals and its gain over climatology holds, while the noise of a single hour drops out.</p>
       </div>
       <div>
+        <div class="tabs" role="group" aria-label="Rain test"><button id="t-h" aria-pressed="true">Hour by hour</button><button id="t-6" aria-pressed="false">6-hour totals</button></div>
         <div class="legend" id="lg2"></div>
         <div class="fig" id="c2"></div>
+        <p class="cap" id="cap2"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="finding">
+    <div class="split">
+      <div>
+        <span class="label">03 · Temperature</span>
+        <h2>The models miss the city's daytime heat.</h2>
+        <div class="num" id="n3"></div>
+        <p>Both models run cool, and ECMWF runs coolest between 9 in the morning and 3 in the afternoon. On its grid the cell that holds most of Singapore is mostly sea, and sea does not heat up during the day the way a city does. A known physical cause, visible in the error by hour, is exactly what a single average would hide.</p>
+      </div>
+      <div>
+        <div class="legend" id="lg3"></div>
+        <div class="fig" id="c3"></div>
         <p class="cap">Mean error (forecast minus station) by local hour, one day ahead, in °C. Zero would be no bias. Shaded: 95 percent interval. Climatology sits 0.3 °C low because the test period was warmer than 2017 to 2023.</p>
       </div>
     </div>
   </section>
 
   <section class="finding">
-    <div class="split">
-      <div>
-        <span class="label">03 · Wind</span>
-        <h2>Wind at a station is forecast worse than a guess from history.</h2>
-        <div class="num" id="n3"></div>
-        <p>Every model is further from the measured wind than climatology, and every model reads too windy. A grid cell 13 to 28 km wide, part of it open water, is being compared with a mast between buildings. They are not measuring the same thing, and anyone who needs the wind at that mast should know it.</p>
-      </div>
-      <div>
-        <div class="fig" id="c3"></div>
-        <p class="cap">Difference in mean absolute error against climatology on the same cases, one day ahead. Left of zero is better than climatology, right is worse. Bars are 95 percent intervals; an interval that crosses zero is no detectable difference.</p>
-      </div>
-    </div>
+    <span class="label">04 · Extremes</span>
+    <h2>The events that matter are where the forecasts fail.</h2>
+    <p>Rare, high-impact weather is the reason to forecast at all, and it is where a model that learned the average is weakest. I chose three events from the gauge data and public reports before looking at any forecast. The line marked Gauges is what was measured, as a network mean per hour; the others are what each model said one day ahead.</p>
+    <div class="legend" id="lg4"></div>
+    <div class="cases" id="cases"></div>
   </section>
 
   <section class="finding">
     <div class="split">
       <div>
-        <span class="label">04 · Matching</span>
-        <h2>Which grid cell you pick matters as much as which model you pick.</h2>
-        <div class="num" id="n4"></div>
-        <p>A station has to be paired with one cell of the model's grid. Take the cell it sits in, or the nearest cell the model treats as land? For ECMWF the land rule moves 53 of Singapore's 54 southern stations to a cell centred in Johor.</p>
-        <p>I chose the cell the station sits in before I saw any score, and report the other as a check.</p>
+        <span class="label">05 · How you judge</span>
+        <h2>One matching choice moves the score as much as switching models.</h2>
+        <div class="num" id="n5"></div>
+        <p>A station has to be paired with one cell of the model's grid. Take the cell it sits in, or the nearest cell the model treats as land? For ECMWF the land rule moves 53 of Singapore's 54 southern stations to a cell centred in Johor, in another country.</p>
+        <p>I chose the cell the station sits in before seeing any score, and report the other as a check. A comparison that doesn't say which rule it used can't be compared with anyone else's.</p>
       </div>
       <div>
         <div class="tabs" role="group" aria-label="Cell rule"><button id="m-n" aria-pressed="true">Cell the station sits in</button><button id="m-l" aria-pressed="false">Nearest land cell</button></div>
-        <div class="fig" id="c4"></div>
-        <p class="cap" id="cap4"></p>
+        <div class="fig" id="c5"></div>
+        <p class="cap" id="cap5"></p>
       </div>
     </div>
   </section>
@@ -156,26 +182,29 @@ footer p { max-width: none; }
   <section class="finding">
     <div class="split">
       <div>
-        <span class="label">05 · Checking the data</span>
-        <h2>Two of my first results were faults in the archive, not skill.</h2>
-        <div class="num" id="n5"></div>
-        <p>On the first run, GFS rain looked better seven days ahead than one day ahead. That cannot be right, so I looked. Beyond 120 hours the archived GFS rain is a third of its day-one amount. Forecasting a third of the rain lowers the error. I removed those lead times and wrote down why, even though it deleted a result that looked good.</p>
-        <p>The second fault runs the other way: ECMWF's public rain comes in 3-hour and 6-hour steps, so I added the 6-hour test in finding 1.</p>
+        <span class="label">06 · Checking the data</span>
+        <h2>Two of my first wins were faults in the archive.</h2>
+        <div class="num" id="n6"></div>
+        <p>On the first run, GFS rain looked better seven days ahead than one day ahead. That cannot be right, so I looked. Beyond 120 hours the archived GFS rain is a third of its day-one amount, and forecasting a third of the rain lowers the error. I removed those lead times and wrote down why, even though it deleted a result that looked good. The ECMWF time steps in section 02 were the second fault.</p>
+        <p>A model trained on raw observations meets the same risk at scale: learning the instrument instead of the atmosphere. The checks have to be part of the pipeline, not an afterthought.</p>
       </div>
       <div>
-        <div class="legend" id="lg5"></div>
-        <div class="fig" id="c5"></div>
-        <p class="cap">Mean forecast rain per hour over Singapore, by how far ahead the forecast was made. A model's average rain should not depend on lead time. ECMWF's holds steady. GFS drops by two thirds after day 3.</p>
+        <div class="legend" id="lg6"></div>
+        <div class="fig" id="c6"></div>
+        <p class="cap">Mean forecast rain per hour over Singapore, by how far ahead the forecast was made. A model's average rain should not depend on lead time. ECMWF's holds steady; GFS drops by two thirds after day 3.</p>
       </div>
     </div>
   </section>
 
   <section class="finding">
-    <span class="label">06 · Three events, replayed</span>
-    <h2>Where the forecasts held, and where they did not.</h2>
-    <p>Chosen from the gauge data and public reports before any forecast was looked at. The darkest line is what the gauges measured, as a network mean per hour. Colour is what each model said one day ahead.</p>
-    <div class="legend" id="lg6"></div>
-    <div class="cases" id="cases"></div>
+    <span class="label">07 · Next</span>
+    <h2>What this judge would test next.</h2>
+    <div class="next">
+      <div><h3>A model trained on observations</h3><p>Scored at the same points, against the same baselines and the same intervals, so it can be compared directly with the operational models here.</p></div>
+      <div><h3>Holdouts that have never been seen</h3><p>Whole stations and whole instruments held out, not only later dates, so nothing in the test has reached training in any form.</p></div>
+      <div><h3>Radar, with a fair score</h3><p>Rain fields scored with a neighbourhood score, so a storm forecast a few kilometres off is not punished twice.</p></div>
+      <div><h3>Beyond the record</h3><p>Error tracked against how far an event exceeds anything in the training years, where learned models have been shown to struggle.</p></div>
+    </div>
   </section>
 
   <div class="limits">
@@ -189,7 +218,7 @@ footer p { max-width: none; }
   </div>
 </div>
 <footer><div class="wrap">
-  <p>Method: the rules were written down before any forecast was scored. Baselines are persistence (the observation 24 hours earlier) and climatology (station, month and hour, 2017 to 2023). Intervals: moving-block bootstrap over days, 8-day blocks, 2000 resamples, on paired differences.</p>
+  <p>Method: the rules were <a href="https://github.com/awvmeijer/tropics-scorecard/blob/main/docs/verification_protocol.md">written down before any forecast was scored</a>, with a dated log of every change. Baselines are persistence (the observation 24 hours earlier) and climatology (station, month and hour, 2017 to 2023). Intervals: moving-block bootstrap over days, 8-day blocks, 2000 resamples, on paired differences.</p>
   <p>Observations: Meteorological Service Singapore via data.gov.sg (Singapore Open Data Licence); NOAA Integrated Surface Database and Integrated Global Radiosonde Archive. Forecasts: <a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a> (CC BY 4.0), one grid cell per station, unchanged. Coastline: Natural Earth.</p>
 </div></footer>
 
@@ -285,52 +314,63 @@ function map(host, rule, small) {
   sv("rect", { x: 0.5, y: 0.5, width: W - 1, height: H - 1, fill: "none", stroke: "var(--rule)" }, svg);
 }
 
+function small(el, text) { const sm = document.createElement("small"); sm.textContent = text; el.append(sm); }
 function all() {
   const L = D.lead, by = (v, s, x) => L[v][s].find((p) => p.x === x);
-  for (const id of ["n2", "n3", "n4", "n5"]) $(id).replaceChildren();
+  const vs = (v, s) => D.versus[v].find((r) => r.s === s);
+  for (const id of ["n1", "n2", "n3", "n5", "n6"]) $(id).replaceChildren();
   // facts
   const n = D.counts, facts = [[D.map.stations.length + " stations", "rain gauges, weather stations and airports, 2017 to 2026"], [(n.rain_hourly / 1e6).toFixed(1) + " million", "hourly rain comparisons per model"], ["4 models", "GFS, ECMWF IFS at two resolutions, ECMWF AIFS"], ["2 baselines", "persistence and climatology, scored like a model"]];
   $("facts").replaceChildren(...facts.map(([b, t]) => { const d = document.createElement("div"); const e = document.createElement("b"); e.textContent = b; const s = document.createElement("span"); s.className = "label"; s.textContent = t; d.append(e, s); return d; }));
   map($("hero-map"), "nearest", true);
-  // 1
-  const vs = (v, s) => D.versus[v].find((r) => r.s === s);
-  let rainVar = "rain_hourly";
-  const draw1 = () => { const ids = ["gfs_global", "ecmwf_ifs025", "persistence", "climatology"]; legend($("lg1"), ids);
-    lines($("c1"), ids.map((id) => ({ id, pts: L[rainVar][id] || [] })), [1, 2, 3, 5, 7], { xf: (d) => "Day " + d, zero: false, draw: true, label: "Rain error by lead time" });
-    const r = vs(rainVar, "ecmwf_ifs025"), c = by(rainVar, "climatology", 1).y;
-    $("n1").innerHTML = ""; $("n1").append(document.createTextNode(Math.round(-r.y / c * 100) + "% lower error")); const sm = document.createElement("small"); sm.textContent = `ECMWF against climatology, one day ahead: ${f(-r.hi, 3)} to ${f(-r.lo, 3)} mm lower`; $("n1").append(sm);
-    $("cap1").textContent = (rainVar === "rain_hourly" ? "Mean absolute error of rain in the hour, in mm," : "Mean absolute error of the 6-hour rain total, in mm,") + " by how many days ahead the forecast was made. Lower is better. Shaded: 95 percent interval. GFS stops at day 3 because its archived rain is wrong beyond 120 hours (finding 5)."; };
-  $("t-h").onclick = () => { rainVar = "rain_hourly"; $("t-h").setAttribute("aria-pressed", "true"); $("t-6").setAttribute("aria-pressed", "false"); draw1(); };
-  $("t-6").onclick = () => { rainVar = "rain_6h"; $("t-6").setAttribute("aria-pressed", "true"); $("t-h").setAttribute("aria-pressed", "false"); draw1(); };
-  draw1();
-  // 2
-  const ids2 = ["gfs_global", "ecmwf_ifs025", "climatology"]; legend($("lg2"), ids2);
-  lines($("c2"), ids2.map((id) => ({ id, pts: D.by_hour.temperature_2m_bias[id] })), [...Array(24).keys()], { xf: (h) => String(h).padStart(2, "0") + ":00", zero: true, names: false, label: "Temperature bias by hour" });
-  const t2 = vs("temperature_2m", "ecmwf_ifs025"), g2 = vs("temperature_2m", "gfs_global");
-  $("n2").append(document.createTextNode(`+${f(g2.y)} to +${f(t2.y)} °C`)); { const sm = document.createElement("small"); sm.textContent = `extra error against climatology: GFS ${f(g2.lo)} to ${f(g2.hi)}, ECMWF ${f(t2.lo)} to ${f(t2.hi)}`; $("n2").append(sm); }
-  // 3
+  // 01 the gap: models detectably better than climatology, per variable
   const order = ["gfs_global", "ecmwf_ifs025", "ecmwf_aifs025_single", "ecmwf_ifs"];
+  const better = (v) => order.map((s) => vs(v, s)).filter((r) => r && r.hi < 0).length;
+  $("n1").append(document.createTextNode(`${better("temperature_2m")} of 4`));
+  small($("n1"), `models detectably better than climatology for temperature at a station; ${better("wind_speed_10m")} of 4 for wind, ${better("rain_hourly")} of 4 for hourly rain`);
   const grp = (v, title) => ({ title, rows: order.map((s) => vs(v, s)).filter(Boolean) });
-  forest($("c3"), [grp("wind_speed_10m", "Wind speed, m/s"), grp("temperature_2m", "Temperature, °C"), grp("rain_hourly", "Hourly rain, mm")]);
-  const w = D.versus.wind_speed_10m.map((r) => r.y); $("n3").append(document.createTextNode(`+${f(Math.min(...w), 1)} to +${f(Math.max(...w), 1)} m/s`)); { const sm = document.createElement("small"); sm.textContent = "extra error against climatology, across the four models"; $("n3").append(sm); }
-  // 4
-  const cr = D.cell_rule; $("n4").append(document.createTextNode(`${f(cr.temperature_2m.y)} °C`)); { const sm = document.createElement("small"); sm.textContent = `worse for temperature under the land rule (${f(cr.temperature_2m.lo)} to ${f(cr.temperature_2m.hi)}); wind ${f(-cr.wind_speed_10m.y)} m/s better`; $("n4").append(sm); }
-  const draw4 = (rule) => { map($("c4"), rule); $("m-n").setAttribute("aria-pressed", rule === "nearest"); $("m-l").setAttribute("aria-pressed", rule === "land");
-    $("cap4").textContent = rule === "nearest" ? "Each station (dot) joined to the centre of the ECMWF 0.25° cell it sits in (blue). Dashed squares are the cells. Most of the island falls in one cell centred over the southern coast." : "Under the land rule, almost every station is joined to a cell centred in Johor, across the strait. Same stations, same model, different forecast."; };
-  $("m-n").onclick = () => draw4("nearest"); $("m-l").onclick = () => draw4("land"); draw4("nearest");
-  // 5
-  legend($("lg5"), ["gfs_global", "ecmwf_ifs025"]);
-  lines($("c5"), ["gfs_global", "ecmwf_ifs025"].map((id) => ({ id, pts: D.amount[id] })), [1, 2, 3, 5, 7], { xf: (d) => "Day " + d, zero: true, label: "Mean forecast rain by lead" });
-  const a = D.amount.gfs_global; $("n5").append(document.createTextNode(`${f(a[0].y)} → ${f(a[a.length - 1].y)} mm/h`)); { const sm = document.createElement("small"); sm.textContent = "GFS mean rain over Singapore, day 1 against day 7"; $("n5").append(sm); }
-  // cases
-  legend($("lg6"), ["obs", "gfs_global", "ecmwf_ifs025"]);
-  const notes = { surge_2025_03: "Both models warned of it days ahead. The amount was another matter: 268 mm fell, GFS said 207, ECMWF 121.", squall_2024_09_17: "31 of 62 gauges took 10 mm or more in one hour. No forecast had it, at any lead time.", dry_2024_07: "1.6 mm fell in 18 days. GFS forecast 81 mm, with showers on most afternoons that never came." };
+  forest($("c1"), [grp("temperature_2m", "Temperature, °C"), grp("wind_speed_10m", "Wind speed, m/s"), grp("rain_hourly", "Hourly rain, mm")]);
+  // 02 rain by lead
+  let rainVar = "rain_hourly";
+  const draw2 = () => { const ids = ["gfs_global", "ecmwf_ifs025", "persistence", "climatology"]; legend($("lg2"), ids);
+    lines($("c2"), ids.map((id) => ({ id, pts: L[rainVar][id] || [] })), [1, 2, 3, 5, 7], { xf: (d) => "Day " + d, draw: true, label: "Rain error by lead time" });
+    const r = vs(rainVar, "ecmwf_ifs025"), c = by(rainVar, "climatology", 1).y;
+    $("n2").replaceChildren(document.createTextNode(Math.round(-r.y / c * 100) + "% lower error"));
+    small($("n2"), `ECMWF against climatology, one day ahead: ${f(-r.hi, 3)} to ${f(-r.lo, 3)} mm lower`);
+    $("cap2").textContent = (rainVar === "rain_hourly" ? "Mean absolute error of rain in the hour, in mm," : "Mean absolute error of the 6-hour rain total, in mm,") + " by how many days ahead the forecast was made. Lower is better. Shaded: 95 percent interval. GFS stops at day 3 because its archived rain is wrong beyond 120 hours (section 06)."; };
+  $("t-h").onclick = () => { rainVar = "rain_hourly"; $("t-h").setAttribute("aria-pressed", "true"); $("t-6").setAttribute("aria-pressed", "false"); draw2(); };
+  $("t-6").onclick = () => { rainVar = "rain_6h"; $("t-6").setAttribute("aria-pressed", "true"); $("t-h").setAttribute("aria-pressed", "false"); draw2(); };
+  draw2();
+  // 03 temperature by hour
+  const ids3 = ["gfs_global", "ecmwf_ifs025", "climatology"]; legend($("lg3"), ids3);
+  lines($("c3"), ids3.map((id) => ({ id, pts: D.by_hour.temperature_2m_bias[id] })), [...Array(24).keys()], { xf: (h) => String(h).padStart(2, "0") + ":00", zero: true, names: false, label: "Temperature bias by hour" });
+  const midday = D.by_hour.temperature_2m_bias.ecmwf_ifs025.filter((p) => p.x >= 9 && p.x <= 15).map((p) => p.y);
+  $("n3").append(document.createTextNode(`${f(Math.min(...midday), 1)} °C`));
+  small($("n3"), "ECMWF's mean error at its worst hour of the day, against -0.6 to -0.8 °C at night");
+  // 04 events
+  legend($("lg4"), ["obs", "gfs_global", "ecmwf_ifs025"]);
+  const notes = { surge_2025_03: "A record monsoon surge. Both models warned of it days ahead, but not of the amount: 268 mm fell, GFS said 207, ECMWF 121.", squall_2024_09_17: "A Sumatra squall line. 31 of 62 gauges took 10 mm or more in one hour. No forecast had it, at any lead time.", dry_2024_07: "An 18-day dry spell. 1.6 mm fell; GFS forecast 81 mm, with showers on most afternoons that never came." };
   $("cases").replaceChildren();
-  for (const [id, c] of Object.entries(D.cases)) {
+  // Lay out all three cards before drawing, so each chart measures its final column width.
+  const figs = Object.entries(D.cases).map(([id, c]) => {
     const box = document.createElement("div"); const h = document.createElement("h3"); h.textContent = c.title; const fig = document.createElement("div"); fig.className = "fig"; const p = document.createElement("p"); p.className = "cap"; p.textContent = notes[id]; box.append(h, fig, p); $("cases").append(box);
+    return [fig, c];
+  });
+  for (const [fig, c] of figs) {
     const ser = ["gfs_global", "ecmwf_ifs025", "obs"].map((s) => ({ id: s, pts: c.t.map((t, i) => ({ x: t, y: c[s][i] })) }));
-    lines(fig, ser, c.t, { names: false, h: 230, xw: 86, xf: (t) => t.slice(8, 10) + "/" + t.slice(5, 7), xl: (t) => t.slice(5).replace("-", "/"), yf: (v) => f(v, 1), label: c.title });
+    lines(fig, ser, c.t, { names: false, h: 230, xw: 104, xf: (t) => t.slice(8, 10) + "/" + t.slice(5, 7) + " " + t.slice(11, 13) + "h", xl: (t) => t.slice(8, 10) + "/" + t.slice(5, 7) + " " + t.slice(11, 16), yf: (v) => f(v, 1), label: c.title });
   }
+  // 05 matching
+  const cr = D.cell_rule; $("n5").append(document.createTextNode(`${f(cr.temperature_2m.y)} °C`));
+  small($("n5"), `worse for temperature under the land rule (${f(cr.temperature_2m.lo)} to ${f(cr.temperature_2m.hi)}), against ${f(Math.abs(vs("temperature_2m", "gfs_global").y - vs("temperature_2m", "ecmwf_ifs025").y))} °C between GFS and ECMWF`);
+  const draw5 = (rule) => { map($("c5"), rule); $("m-n").setAttribute("aria-pressed", rule === "nearest"); $("m-l").setAttribute("aria-pressed", rule === "land");
+    $("cap5").textContent = rule === "nearest" ? "Each station joined to the centre of the ECMWF 0.25° cell it sits in (blue). Dashed squares are the cells. Most of the island falls in one cell centred over the southern coast." : "Under the land rule, almost every station is joined to a cell centred in Johor, across the strait. Same stations, same model, different score."; };
+  $("m-n").onclick = () => draw5("nearest"); $("m-l").onclick = () => draw5("land"); draw5("nearest");
+  // 06 archive fault
+  legend($("lg6"), ["gfs_global", "ecmwf_ifs025"]);
+  lines($("c6"), ["gfs_global", "ecmwf_ifs025"].map((id) => ({ id, pts: D.amount[id] })), [1, 2, 3, 5, 7], { xf: (d) => "Day " + d, zero: true, label: "Mean forecast rain by lead" });
+  const a = D.amount.gfs_global; $("n6").append(document.createTextNode(`${f(a[0].y)} → ${f(a[a.length - 1].y)} mm/h`));
+  small($("n6"), "GFS mean rain over Singapore, day 1 against day 7");
 }
 // Dark by default. The switch sets data-theme on the root; the choice is remembered.
 const root = document.documentElement, themeBtn = $("theme");

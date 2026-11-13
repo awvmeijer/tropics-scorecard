@@ -28,11 +28,11 @@ This repository scores hourly rain, temperature and wind forecasts for Singapore
   </picture>
 </p>
 
-- **Rain:** the best forecast beats the free baselines, but only by about 12 percent.
-- **Temperature:** no model beats climatology at a weather station. Both main models run cool.
-- **Wind:** every model is worse than a guess from history. A grid cell is not a mast between buildings.
-- **Matching:** which grid cell a station is paired with matters as much as which model is used.
-- **Data:** two of the first results were faults in the forecast archive, found and logged before anything was reported.
+- **At the surface in the tropics, operational forecasts barely beat a free guess.** No model is detectably better than climatology for temperature or wind at a station. For rain, ECMWF gains about 12 percent.
+- **The events that matter most are where they miss.** A squall line put 10 mm in an hour on half of Singapore's gauges, and no forecast had it at any lead time.
+- **The judge needs as much care as the model.** One matching choice moves a score as much as switching models, and two of the first "wins" were faults in the forecast archive.
+
+If a weather model is meant to learn from observations, it should be judged on them too. This repository is a small, working version of that judge.
 
 The full write-up is in [docs/findings.md](docs/findings.md), the case studies in [docs/cases/](docs/cases/), and what went wrong and why in [docs/failure_modes.md](docs/failure_modes.md).
 
