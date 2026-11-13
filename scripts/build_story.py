@@ -88,6 +88,7 @@ def main() -> None:
     shutil.copytree(ROOT / "dashboard", site, ignore=shutil.ignore_patterns("story.html"))
     (ROOT / "docs" / ".nojekyll").write_text("")
     add_counter(site)
+    print("wrote dashboard/story.html", len(out) // 1024, "kB", counts)
 
 
 def add_counter(site: Path) -> None:
@@ -109,7 +110,6 @@ def add_counter(site: Path) -> None:
             continue
         html = html.replace("</body>", tag + "\n</body>") if "</body>" in html else html + "\n" + tag + "\n"
         page.write_text(html, encoding="utf-8")
-    print("wrote dashboard/story.html", len(out) // 1024, "kB", counts)
 
 
 if __name__ == "__main__":
