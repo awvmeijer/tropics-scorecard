@@ -6,7 +6,7 @@ This repository scores hourly rain, temperature and wind forecasts for Singapore
 
 [![tests](https://github.com/awvmeijer/tropics-scorecard/actions/workflows/tests.yml/badge.svg)](https://github.com/awvmeijer/tropics-scorecard/actions/workflows/tests.yml)
 
-**[Read the one-page summary](https://awvmeijer.github.io/tropics-scorecard/)**: a scorecard across lead days, an extremes test, a decision score, the reanalysis as a second judge, three replayed events, and what the checks caught.
+**[Read the one-page summary](https://awvmeijer.github.io/tropics-scorecard/)**: a scorecard across lead days, what the choice of score does to the rain verdict, a perfect-forecast ceiling, an extremes test, a decision score, the reanalysis as a second judge, a model fitted to the stations, three replayed events, and what the checks caught.
 
 <p align="center">
   <picture>
@@ -22,13 +22,14 @@ This repository scores hourly rain, temperature and wind forecasts for Singapore
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/result-dark.svg">
     <source media="(prefers-color-scheme: light)" srcset="docs/assets/result-light.svg">
-    <img alt="Difference in mean absolute error against climatology, one day ahead, with 95 percent intervals. Rain forecasts are slightly better than climatology; temperature and wind forecasts are worse." src="docs/assets/result-light.svg" width="100%">
+    <img alt="Change in root mean square error against climatology, one day ahead, with 95 percent intervals. Temperature and wind forecasts are worse than climatology; for rain only ECMWF's AIFS is better." src="docs/assets/result-light.svg" width="100%">
   </picture>
 </p>
 
-- **At the surface in the tropics, only the rain forecasts beat a free guess, and only just.** No model is detectably better than climatology for temperature or wind at a station, at any lead time. For rain, ECMWF's error is about 12 percent lower one day ahead.
-- **The events that matter most are where they miss.** ECMWF's heaviest 6-hour rain totals are a third of what the gauges measured, even with the gauges averaged over the model's own grid cell. Acting on the best forecast for heavy rain keeps at most 13 percent of what a perfect one would save. A squall line put 10 mm in an hour on half of Singapore's gauges, and no forecast had it at any lead time.
-- **The judge needs as much care as the model.** Judged by the ERA5 reanalysis instead of the instruments, GFS and ECMWF swap places for temperature, and ERA5 itself is further from the thermometers than a free climatology. One matching choice moves a score more than switching models does, and two of the first results were faults in the forecast archive.
+- **Against the instruments, raw forecasts lose to a free guess.** By root mean square error, GFS and ECMWF's IFS are never detectably better than climatology for temperature, wind or rain at a station, at any lead time. The 7 cells of 76 that are belong to ECMWF's AIFS, the learned model.
+- **The score and the judge decide the verdict.** By mean absolute error ECMWF's rain looks 13 percent better than climatology, but a forecast that never rains looks 41 percent better. Judged by the ERA5 reanalysis instead of the instruments, GFS and ECMWF swap places for temperature. One matching choice moves a score more than switching models does, and two of the first results were faults in the forecast archive.
+- **The gap is not just a point against a grid cell.** A perfect forecast at ECMWF's grid size would cut 6-hour rain error at a gauge by 42 percent (27 to 68). ECMWF's cuts nothing, and its heaviest totals are a third of what the gauges measured. A squall line put 10 mm in an hour on half of Singapore's gauges, and no forecast had it at any lead time.
+- **The information is there, and station data unlocks it.** A linear fit of the same raw forecasts to 17 months of station data beats climatology for temperature by 13 percent (9 to 18) on the following 16 months, and by 17 percent (12 to 22) at stations it never saw. For rain the gain is 2 percent.
 
 If a weather model is meant to learn from observations, it should be judged on them too. This repository is a small, working version of that judge.
 
@@ -50,7 +51,9 @@ The full write-up is in [docs/findings.md](docs/findings.md), the case studies i
 | Forecasts | GFS and ECMWF IFS 0.25° at lead days 1, 2, 3, 5 and 7 (Open-Meteo Previous Runs); whole runs from April 2026 for hour-by-hour lead times. ECMWF AIFS and IFS 9 km on their shorter archives, scored apart |
 | Baselines | Persistence and climatology, exposed exactly like a model |
 | Intervals | Moving-block bootstrap over days, on paired differences between two forecasts on the same cases |
-| Summary tables | A scorecard of the change in error against climatology at every lead day, and an extremes test comparing the heaviest 6-hour rain totals with the gauges, alone and averaged over each grid cell |
+| Summary tables | A scorecard of the change in root mean square error against climatology at every lead day, with mean absolute error and an always-dry forecast alongside for rain, and an extremes test comparing the heaviest 6-hour rain totals with the gauges, alone and averaged over each grid cell |
+| Validation | The standard evaluation statistics with their benchmarks, anomaly correlation, how fast gauges stop agreeing with distance, and a perfect forecast at the model's grid size as a ceiling |
+| Trained model | A linear fit of the raw forecasts to station data, trained on the first 17 months and scored on the next 16, at stations it saw and stations it never saw |
 | Decision value | How much of a perfect forecast's saving a user keeps by protecting whenever the forecast says 10 mm of rain or more, for every ratio of the cost of protecting to the loss avoided |
 | Reanalysis | ERA5, scored against the stations like a forecast, and used as a second judge of the same forecasts on the same station-hours |
 
@@ -90,8 +93,8 @@ store/      tidy Parquet tables, read through DuckDB
 qc/         range, spike, flatline, duplicate, stuck-gauge and clock checks; every flag logged
 match/      the hourly reference the forecasts are scored against
 sources/    one interface for anything that forecasts: operational models and ERA5
-baselines/  persistence and climatology
-scorer/     scores, comparisons, intervals and the summary tables; all maths in metrics/
+baselines/  persistence, climatology and an always-dry forecast
+scorer/     scores, comparisons, intervals, the summary and validation tables and the trained model; all maths in metrics/
 metrics/    the metric functions, standard library only
 cases/      replay one event from one command
 dashboard/  static site reading precomputed JSON

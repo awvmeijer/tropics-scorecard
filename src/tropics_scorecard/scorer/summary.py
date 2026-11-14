@@ -1,8 +1,9 @@
-"""Two summary tables, added after the main scoring (protocol change log, 14 November 2026).
+"""Three summary tables, added after the main scoring (protocol change log, 14 November 2026).
 
-    skill.parquet     each model's change in mean absolute error against climatology, as a
-                      percentage of climatology's error on the same cases, every lead day:
-                      the layout of the scorecards in published weather-model studies
+    skill.parquet     each model's change in error against climatology, as a percentage of
+                      climatology's error on the same cases, every lead day, by mean absolute
+                      error and by root mean square error: the layout of the scorecards in
+                      published weather-model studies. Rain also gets an always-dry forecast
     extremes.parquet  the relative quantile error of 6-hour rain totals: do the model's
                       heaviest totals reach the gauges' heaviest? Against each gauge, and
                       against the gauges averaged over the model's own grid cell, so a cell
@@ -11,12 +12,13 @@
                       10 mm or more, and see how much of a perfect forecast's saving over the
                       best fixed choice that keeps, for each ratio of cost to avoided loss
 
-Both use the scorer's own cases, pairs and day blocks, and all their maths goes through
+All use the scorer's own cases, pairs and day blocks, and all their maths goes through
 metrics/. Usage:
     python -m tropics_scorecard.scorer.summary
 """
 from __future__ import annotations
 
+import math
 import sys
 
 import pandas as pd
@@ -43,51 +45,75 @@ def _pairs(cfg: dict, name, variable: str, cases: pd.DataFrame) -> pd.DataFrame:
     return core.six_hour_totals(p, cfg) if variable == core.SIX_HOUR else p
 
 
-def skill_rows(cfg: dict, variable: str, lead: int, cases: pd.DataFrame, clim, names, tag: str = "") -> list[dict]:
-    """Percent change in MAE against a climatology, with the paired interval, for each source.
+def _daily(p: pd.DataFrame, score: str) -> dict:
+    """Day -> the day's mean absolute error, or mean squared error."""
+    fn = core.CONTINUOUS["mae"][0] if score == "mae" else core._mse
+    days, vals = core.daily_values(p, [], fn, ("forecast", "observed")).get((), ([], []))
+    return dict(zip(days, vals))
 
-    cases carry the truth in "observed"; clim is the climatology source scored on the same
-    cases. Only cases both sides forecast count, and days are paired before the interval."""
-    fn = core.CONTINUOUS["mae"][0]
+
+def paired_change(model: pd.DataFrame, reference: pd.DataFrame, cfg: dict, score: str = "mae") -> dict | None:
+    """Change in error of one set of pairs against another on the same cases, day by day,
+    with the block-bootstrap interval. None when there are too few days."""
+    da, db = _daily(model, score), _daily(reference, score)
+    days = [d for d in da if d in db]
+    b = [db[d] for d in days]
+    ci = core.interval([da[d] for d in days], b, cfg) if days else None
+    if ci is None:
+        return None
+    ref = sum(b) / len(b)  # the reference's day-weighted score on the same days
+    if score == "mae":
+        pct = [errors.percent_change(v, ref) for v in ci]
+    else:
+        pct = [100 * (math.sqrt(max(1 + v / ref, 0.0)) - 1) for v in ci]
+    return {"difference": ci, "reference": ref, "percent": pct, "n_days": len(days)}
+
+
+def skill_rows(cfg: dict, variable: str, lead: int, cases: pd.DataFrame, clim, names, tag: str = "",
+               score: str = "mae") -> list[dict]:
+    """Percent change in error against a climatology, with the paired interval, for each source.
+
+    cases carry the truth in "observed"; clim is the reference source scored on the same
+    cases. Only cases both sides forecast count, and days are paired before the interval.
+    score "mae" compares mean absolute errors. score "rmse" pairs daily mean squared errors
+    and reports the change in root mean square error: sqrt(1 + difference / reference) - 1."""
     base = "rain_hourly" if variable == core.SIX_HOUR else variable
     ref_pairs = _pairs(cfg, clim, variable, cases)
     rows = []
     for name in names:
-        if core.excluded(cfg, name, base, "day", lead):
+        if isinstance(name, str) and core.excluded(cfg, name, base, "day", lead):
             continue
         try:
             p = _pairs(cfg, name, variable, cases)
         except LookupError:
             continue
+        label = name if isinstance(name, str) else name.name
         keep = ["station_key", "valid_time"]
         common = p.merge(ref_pairs[keep], on=keep)
         ref = ref_pairs.merge(common[keep], on=keep)
-        da = core.daily_values(common, [], fn, ("forecast", "observed")).get(())
-        db = dict(zip(*core.daily_values(ref, [], fn, ("forecast", "observed")).get((), ([], []))))
-        if not da:
+        got = paired_change(common, ref, cfg, score)
+        if got is None:
             continue
-        pairs = [(x, db[d]) for d, x in zip(*da) if d in db]
-        a, b = [x for x, _ in pairs], [y for _, y in pairs]
-        ci = core.interval(a, b, cfg)
-        if ci is None:
-            continue
-        reference = sum(b) / len(b)  # climatology's day-weighted MAE on the same days
-        pct = [errors.percent_change(v, reference) for v in ci]
-        rows.append({"source": name, "variable": variable, "lead": int(lead), "difference": ci[0],
-                     "difference_low": ci[1], "difference_high": ci[2], "reference_mae": reference,
-                     "percent": pct[0], "low": pct[1], "high": pct[2], "n_pairs": len(common), "n_days": len(a)})
-        print(f"   skill{tag} {variable} day {lead} {name}: {pct[0]:+.1f}% ({pct[1]:+.1f} to {pct[2]:+.1f})", flush=True)
+        ci, reference, pct = got["difference"], got["reference"], got["percent"]
+        rows.append({"source": label, "variable": variable, "lead": int(lead), "score": score, "difference": ci[0],
+                     "difference_low": ci[1], "difference_high": ci[2], "reference_score": reference,
+                     "percent": pct[0], "low": pct[1], "high": pct[2], "n_pairs": len(common), "n_days": got["n_days"]})
+        print(f"   skill{tag} {score} {variable} day {lead} {label}: {pct[0]:+.1f}% ({pct[1]:+.1f} to {pct[2]:+.1f})", flush=True)
     return rows
 
 
 def skill(cfg: dict) -> pd.DataFrame:
-    """Percent change in MAE against climatology, judged by the stations, every lead day."""
+    """Percent change in error against climatology, judged by the stations, every lead day,
+    by mean absolute error and by root mean square error. For rain an always-dry forecast is
+    scored too: it shows what each score rewards."""
     rows = []
     for variable in cfg["summary_scores"]["skill_variables"]:
         base = "rain_hourly" if variable == core.SIX_HOUR else variable
+        names = _models(cfg) + (["always_dry"] if base == "rain_hourly" else [])
         for lead in cfg["lead_times"]["days"]:
             cases = core.cases_for(cfg, base, "day", lead)
-            rows += skill_rows(cfg, variable, lead, cases, "climatology", _models(cfg))
+            for score in ("mae", "rmse"):
+                rows += skill_rows(cfg, variable, lead, cases, "climatology", names, score=score)
     return pd.DataFrame(rows)
 
 

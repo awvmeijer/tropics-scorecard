@@ -72,6 +72,10 @@ def cases_for(cfg: dict, variable: str, lead_kind: str, lead: int, drop_flagged:
     obs = reference if reference is not None else observations.load(variable, start, end, drop_flagged=drop_flagged)
     obs = obs[(obs["time_utc"] >= start) & (obs["time_utc"] <= end)]
     c = obs.rename(columns={"time_utc": "valid_time", "value": "observed"})[["station_key", "valid_time", "observed"]]
+    # An instrument that reaches us through two feeds is scored once (protocol change log, 14 November).
+    twice = (cfg.get("matching") or {}).get("duplicate_stations") or []
+    if twice:
+        c = c[~c["station_key"].isin(twice)]
     if lead_kind == "hour":
         run = c["valid_time"] - pd.Timedelta(hours=int(lead))
         c = c[run.dt.hour.isin(cfg["lead_times"]["single_run_hours_utc"]) & (run >= start)]

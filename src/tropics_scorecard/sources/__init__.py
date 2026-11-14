@@ -47,6 +47,10 @@ def get_source(name: str, cfg: dict, cell_rule: str | None = None) -> ForecastSo
         return Persistence(cfg, mode="issue")
     if name == "climatology":
         return Climatology(cfg)
+    if name == "always_dry":
+        from ..baselines.always_dry import AlwaysDry
+
+        return AlwaysDry()
     if name == "era5":
         from .era5 import Era5
 

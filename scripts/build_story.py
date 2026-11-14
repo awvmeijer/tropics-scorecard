@@ -76,8 +76,15 @@ def main() -> None:
 
     # The scorecard and the extremes test (scorer.summary).
     sk = pd.read_parquet(TABLES / "results" / "skill.parquet")
-    skill = [{"s": r.source, "v": r.variable, "l": int(r.lead), "p": r4(r.percent), "lo": r4(r.low), "hi": r4(r.high),
-              "d": int(r.n_days)} for r in sk.itertuples()]
+    def row(r):
+        return {"s": r.source, "v": r.variable, "l": int(r.lead), "p": r4(r.percent), "lo": r4(r.low),
+                "hi": r4(r.high), "d": int(r.n_days)}
+
+    models = sk[sk.source != "always_dry"]
+    skill = [row(r) for r in models[models.score == "rmse"].itertuples()]  # the scorecard: root mean square error
+    # Rain one day ahead under both scores, with the always-dry forecast: what each score rewards.
+    rain = sk[sk.variable.isin(["rain_hourly", "rain_6h"]) & (sk.lead == 1)]
+    rain_scores = [{**row(r), "score": r.score} for r in rain.itertuples()]
     ex = pd.read_parquet(TABLES / "results" / "extremes.parquet")
     ext = [{"s": r.source, "ref": r.reference, "q": float(r.q), "f": r4(r.forecast_q), "o": r4(r.observed_q),
             "r": r4(r.rqe), "lo": r4(r.low), "hi": r4(r.high)} for r in ex[ex.lead == 1].itertuples()]
@@ -99,6 +106,16 @@ def main() -> None:
     rex = [{"ref": r.reference, "q": float(r.q), "f": r4(r.forecast_q), "o": r4(r.observed_q), "r": r4(r.rqe),
             "lo": r4(r.low), "hi": r4(r.high)} for r in rx.itertuples()]
 
+    # Validation tables and the small trained model (scorer.validation, scorer.postprocess).
+    def rec(df):
+        return [{k: (r4(v) if isinstance(v, float) else v) for k, v in r.items()} for r in df.to_dict("records")]
+
+    ev = pd.read_parquet(TABLES / "results" / "evaluation.parquet")
+    nb = pd.read_parquet(TABLES / "results" / "neighbours.parquet").assign(bin=lambda d: d["bin"].astype(str))
+    extra = {"rain_scores": rain_scores, "evaluation": rec(ev), "neighbours": rec(nb),
+             "ceiling": rec(pd.read_parquet(TABLES / "results" / "ceiling.parquet")),
+             "postprocess": rec(pd.read_parquet(TABLES / "results" / "postprocess.parquet"))}
+
     # Stations with at least one scored hour in the test period, one day ahead, any variable.
     from tropics_scorecard.paths import load_config
     from tropics_scorecard.scorer import core
@@ -111,7 +128,7 @@ def main() -> None:
     data = {"lead": lead, "versus": versus, "by_hour": by_hour, "cell_rule": cell_rule, "amount": amount,
             "map": {"view": VIEW, "rings": bm["rings"], "stations": stations, "cells": cells}, "cases": cases,
             "counts": counts, "skill": skill, "ext": ext, "heavy": heavy, "dec": dec, "rea": rea, "reb": reb,
-            "rex": rex, "scored": len(scored)}
+            "rex": rex, "scored": len(scored), **extra}
     template = (ROOT / "scripts" / "story_template.html").read_text(encoding="utf-8")
     page = template.replace("/*DATA*/null", json.dumps(data, separators=(",", ":")))
     (ROOT / "dashboard" / "story.html").write_text(page, encoding="utf-8")

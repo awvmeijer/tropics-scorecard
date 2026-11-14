@@ -12,6 +12,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
+ml = ["scikit-learn>=1.4"]  # optional: the boosted model in scorer/postprocess.py
 
 [build-system]
 requires = ["setuptools>=68"]

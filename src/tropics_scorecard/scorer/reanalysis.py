@@ -6,7 +6,7 @@ GenCast are trained on ERA5 and scored against it. This module asks two question
 1. How close is ERA5 itself to the instruments? ERA5 is scored against the stations like any
    forecast, on the one-day-ahead cases, against station climatology, and its 6-hour rain
    extremes are tested like the models'.
-2. Does the verdict on a forecast change with the judge? Each model's change in MAE against
+2. Does the verdict on a forecast change with the judge? Each model's change in RMSE against
    climatology, at every lead day, is computed twice on the same station-hours: once with the
    station readings as the truth and station climatology as the reference, once with ERA5 at
    the station's cell as the truth and ERA5 climatology (same years, same station, month and
@@ -51,15 +51,15 @@ def table(cfg: dict) -> pd.DataFrame:
         for lead in cfg["lead_times"]["days"]:
             stations = core.cases_for(cfg, base, "day", lead)
             got = summary.skill_rows(cfg, variable, lead, stations, "climatology",
-                                     names + (["era5"] if lead == 1 else []), " [stations]")
+                                     names + (["era5"] if lead == 1 else []), " [stations]", score="rmse")
             rows += [{**r, "judge": "stations"} for r in got]
             judged = era5_judged(cfg, era5, base, lead)
-            got = summary.skill_rows(cfg, variable, lead, judged, clim_era5, names, " [era5]")
+            got = summary.skill_rows(cfg, variable, lead, judged, clim_era5, names, " [era5]", score="rmse")
             rows += [{**r, "judge": "era5"} for r in got]
             # GFS against ECMWF IFS 0.25 directly, under each judge: does the order change?
             ifs = core.get_source("ecmwf_ifs025", cfg)
             for judge, c in (("stations", stations), ("era5", judged)):
-                got = summary.skill_rows(cfg, variable, lead, c, ifs, ["gfs_global"], f" [{judge}, against IFS]")
+                got = summary.skill_rows(cfg, variable, lead, c, ifs, ["gfs_global"], f" [{judge}, against IFS]", score="rmse")
                 rows += [{**r, "judge": judge, "reference": "ecmwf_ifs025"} for r in got]
     t = pd.DataFrame(rows)
     t["reference"] = t["reference"].fillna("climatology") if "reference" in t else "climatology"

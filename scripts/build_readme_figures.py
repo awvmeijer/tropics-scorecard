@@ -95,29 +95,28 @@ def pipeline(theme: str) -> str:
 
 def result(theme: str) -> str:
     t = THEMES[theme]
-    res = pd.read_parquet(TABLES / "results" / "results.parquet")
-    d = res[(res.qc == "flags_removed") & (res.station == "all") & (res.hour_local == "all") & (res.regime == "all")
-            & (res.lead_kind == "day") & (res.lead == 1) & (res.metric == "mae") & (res.against == "climatology")]
+    res = pd.read_parquet(TABLES / "results" / "skill.parquet")
+    d = res[(res.lead == 1) & (res.score == "rmse")]
     names = {"gfs_global": ("GFS", t["gfs"]), "ecmwf_ifs025": ("ECMWF IFS 0.25°", t["ifs"]),
              "ecmwf_aifs025_single": ("ECMWF AIFS 0.25°", t["other"]), "ecmwf_ifs": ("ECMWF IFS 9 km", t["other"])}
-    groups = [("rain_hourly", "Hourly rain, mm"), ("temperature_2m", "Temperature, °C"), ("wind_speed_10m", "Wind speed, m/s")]
-    rows = [(title, names[r.source], r.value, r.low, r.high) for v, title in groups for r in d[d.variable == v].itertuples() if r.source in names]
+    groups = [("rain_6h", "Rain, 6-hour totals"), ("temperature_2m", "Temperature"), ("wind_speed_10m", "Wind speed")]
+    rows = [(title, names[r.source], r.percent, r.low, r.high) for v, title in groups for r in d[d.variable == v].itertuples() if r.source in names]
     W, left, right, rh, top = 1040, 250, 60, 27, 96
     H = top + len(rows) * rh + len(groups) * 30 + 56
-    lo = min(min(r[3] for r in rows), 0) - 0.05
-    hi = max(r[4] for r in rows) + 0.05
+    lo = min(min(r[3] for r in rows), 0) - 5
+    hi = max(r[4] for r in rows) + 5
     def X(v):
         return left + (v - lo) / (hi - lo) * (W - left - right)
-    s = [frame(t, W, H, "Difference in mean absolute error against climatology, one day ahead, with 95 percent intervals. Rain forecasts are slightly better than climatology; temperature and wind forecasts are worse."),
-         stage(t, 44, "ERROR AGAINST CLIMATOLOGY · ONE DAY AHEAD · 95 PERCENT INTERVALS"),
+    s = [frame(t, W, H, "Change in root mean square error against climatology, one day ahead, with 95 percent intervals. Temperature and wind forecasts are worse than climatology; for rain only ECMWF's AIFS is better."),
+         stage(t, 44, "RMS ERROR AGAINST CLIMATOLOGY · ONE DAY AHEAD · 95 PERCENT INTERVALS"),
          f'<text x="{X(0) - 12}" y="78" text-anchor="end" {SANS} font-size="12.5" fill="{t["sub"]}">← better than climatology</text>',
          f'<text x="{X(0) + 12}" y="78" {SANS} font-size="12.5" fill="{t["sub"]}">worse than climatology →</text>']
-    v = -0.2
+    v = -20
     while v <= hi:
         if v >= lo:
             s.append(f'<line x1="{X(v):.1f}" x2="{X(v):.1f}" y1="{top - 6}" y2="{H - 46}" stroke="{t["wire"]}" stroke-width="1"/>'
-                     f'<text x="{X(v):.1f}" y="{H - 26}" text-anchor="middle" {SANS} font-size="11.5" fill="{t["sub"]}">{v:+.1f}</text>')
-        v = round(v + 0.2, 1)
+                     f'<text x="{X(v):.1f}" y="{H - 26}" text-anchor="middle" {SANS} font-size="11.5" fill="{t["sub"]}">{"0" if v == 0 else f"{v:+d}%"}</text>')
+        v += 20
     s.append(f'<line x1="{X(0):.1f}" x2="{X(0):.1f}" y1="{top - 6}" y2="{H - 46}" stroke="{t["zero"]}" stroke-width="1.2"/>')
     y, last = top - 6, None
     for i, (title, (name, colour), val, a, b) in enumerate(rows):

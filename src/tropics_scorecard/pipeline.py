@@ -78,7 +78,7 @@ def build(cfg: dict) -> None:
 
 def score(cfg: dict) -> None:
     from . import export
-    from .scorer import core, reanalysis, summary
+    from .scorer import core, postprocess, reanalysis, summary, validation
 
     t = _step("scoring")
     df = core.run_all(cfg)
@@ -91,6 +91,14 @@ def score(cfg: dict) -> None:
 
     t = _step("ERA5: scored against the stations, and as a second judge")
     reanalysis.main(cfg)
+    _done(t)
+
+    t = _step("validation: evaluation statistics, neighbouring gauges, the perfect-cell ceiling")
+    validation.main(cfg)
+    _done(t)
+
+    t = _step("the small trained model")
+    postprocess.main(cfg)
     _done(t)
     export.main([])
 

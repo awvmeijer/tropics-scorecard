@@ -34,6 +34,10 @@ matching:                                       # protocol section 3
   rain_readings_per_hour: 12                    # keep an hour only when complete
   instant_window_minutes: 0                     # temperature and wind: the reading stamped on the hour
   knots_to_ms: 0.514444
+  # Airport reports that repeat a data.gov.sg station at the same site: Changi (S24, hourly
+  # temperatures agree to 0.06 degrees) and Paya Lebar (S06, 0.27, the rounding of a METAR).
+  # Scored once, through the data.gov.sg feed. Added 2026-11-14, protocol change log.
+  duplicate_stations: ["isd:48698099999", "isd:48694099999"]
 
 baselines:                                      # protocol section 5
   persistence_day_offset_hours: 24              # lead day N uses the observation 24N hours earlier
@@ -115,6 +119,11 @@ summary_scores:
   decision_threshold_mm: 10.0
   decision_windows: [rain_hourly, rain_6h]
   cost_loss_ratios: [0.005, 0.01, 0.02, 0.03, 0.05, 0.1, 0.2, 0.3, 0.5]
+
+# A small trained model (added 2026-11-14): fitted on the test period up to this date, scored
+# only after it. The date splits the 33 months roughly in half and was set before fitting.
+postprocess:
+  train_until: 2025-06-30
 
 # Page counts on the hosted site only (GitHub Pages). GoatCounter: no cookies, no personal data.
 # Empty code = no counter. The counter is added to docs/, never to the local dashboard.
